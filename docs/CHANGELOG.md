@@ -2,6 +2,12 @@
 
 Mọi thay đổi đáng kể của dự án được ghi nhận tại file này theo định dạng Keep a Changelog.
 
+## [0.1.2] - 2026-09-18
+### Fixed
+- Bổ sung `expo-asset`, `expo-status-bar` chuẩn tương thích Expo SDK 52 cho thư mục `mobile/`.
+- Cài đặt `typescript@~5.3.3` tương thích với Expo Metro Config thay vì phiên bản thử nghiệm.
+- Tạo file `mobile/index.js` làm entry point chính thức cho Expo bundler.
+
 ## [0.1.1] - 2026-09-18
 ### Fixed
 - Khắc phục lỗi nạp module thuật toán âm lịch trên Web client (loại bỏ tệp CommonJS sinh thừa, đồng bộ module TypeScript nội bộ).
