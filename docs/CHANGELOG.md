@@ -2,6 +2,10 @@
 
 Mọi thay đổi đáng kể của dự án được ghi nhận tại file này theo định dạng Keep a Changelog.
 
+## [0.1.3] - 2026-09-18
+### Changed
+- Nâng cấp dự án `mobile/` lên **Expo SDK 57** (`expo@~57.0.23`, `react-native@0.86.3`, `react@19.2.3`), tương thích tuyệt đối với phiên bản ứng dụng Expo Go mới nhất trên CH Play / Android.
+
 ## [0.1.2] - 2026-09-18
 ### Fixed
 - Bổ sung `expo-asset`, `expo-status-bar` chuẩn tương thích Expo SDK 52 cho thư mục `mobile/`.
