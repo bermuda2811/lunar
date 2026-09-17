@@ -5,10 +5,10 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
   StatusBar as RNStatusBar,
   TextInput
 } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { getFullDayData, solarToLunar, getCanChi, getDayRating } from './src/domain/lunarCalendar';
 
 type ScreenType =
@@ -60,8 +60,9 @@ export default function App() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <RNStatusBar barStyle="dark-content" backgroundColor="#FDFBF7" />
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container}>
+        <RNStatusBar barStyle="dark-content" backgroundColor="#FDFBF7" />
 
       {/* TOP HEADER */}
       <View style={styles.topBar}>
@@ -330,6 +331,7 @@ export default function App() {
         </TouchableOpacity>
       </View>
     </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
