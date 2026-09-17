@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, ChevronRight as ArrowRight } from 'lucide-re
 import { StatusBar } from '../components/StatusBar';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { ScreenType } from '../types';
-import { solarToLunar, getDayRating, getCanChi } from '../../../shared/calendar/lunarCalendar';
+import { solarToLunar, getDayRating, getCanChi } from '../domain/lunarCalendar';
 
 interface MonthlyCalendarScreenProps {
   currentDate: Date;

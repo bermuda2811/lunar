@@ -9,7 +9,7 @@ import {
   StatusBar as RNStatusBar,
   TextInput
 } from 'react-native';
-import { getFullDayData, solarToLunar, getCanChi, getDayRating } from '../shared/calendar/lunarCalendar';
+import { getFullDayData, solarToLunar, getCanChi, getDayRating } from './src/domain/lunarCalendar';
 
 type ScreenType =
   | 'splash'

@@ -3,7 +3,7 @@ import { ChevronLeft, Calendar as CalendarIcon, ChevronDown } from 'lucide-react
 import { StatusBar } from '../components/StatusBar';
 import { ReminderIcon } from '../components/ReminderIcon';
 import { ScreenType, ReminderItem } from '../types';
-import { solarToLunar, lunarToSolar } from '../../../shared/calendar/lunarCalendar';
+import { solarToLunar, lunarToSolar } from '../domain/lunarCalendar';
 
 interface AddReminderScreenProps {
   onSave: (reminder: ReminderItem) => void;

@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, Star, Quote, Search, Settings } from 'lucide
 import { StatusBar } from '../components/StatusBar';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { ScreenType } from '../types';
-import { getFullDayData } from '../../../shared/calendar/lunarCalendar';
+import { getFullDayData } from '../domain/lunarCalendar';
 
 interface DailyOverviewScreenProps {
   currentDate: Date;

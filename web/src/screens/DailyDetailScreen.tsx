@@ -3,7 +3,7 @@ import { ChevronLeft, Search, Calendar, Moon, Clock, CheckCircle2, Ban, Star, Su
 import { StatusBar } from '../components/StatusBar';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { ScreenType } from '../types';
-import { getFullDayData } from '../../../shared/calendar/lunarCalendar';
+import { getFullDayData } from '../domain/lunarCalendar';
 
 interface DailyDetailScreenProps {
   currentDate: Date;
