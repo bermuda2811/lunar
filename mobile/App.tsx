@@ -6,9 +6,14 @@ import {
   TouchableOpacity,
   ScrollView,
   StatusBar as RNStatusBar,
-  TextInput
+  TextInput,
+  Platform,
 } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+  initialWindowMetrics,
+} from 'react-native-safe-area-context';
 import { getFullDayData, solarToLunar, getCanChi, getDayRating } from './src/domain/lunarCalendar';
 
 type ScreenType =
@@ -24,6 +29,18 @@ type ScreenType =
   | 'event_detail';
 
 export default function App() {
+  return (
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+      <MainApp />
+    </SafeAreaProvider>
+  );
+}
+
+function MainApp() {
+  const insets = useSafeAreaInsets();
+  const topInset = Math.max(insets.top, Platform.OS === 'android' ? (RNStatusBar.currentHeight || 0) : 0);
+  const bottomInset = insets.bottom;
+
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('daily_overview');
   const [currentDate, setCurrentDate] = useState<Date>(new Date(2026, 8, 16));
   const [reminders, setReminders] = useState([
@@ -60,9 +77,18 @@ export default function App() {
   };
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.container}>
-        <RNStatusBar barStyle="dark-content" backgroundColor="#FDFBF7" />
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: topInset,
+          paddingBottom: bottomInset,
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+        },
+      ]}
+    >
+      <RNStatusBar barStyle="dark-content" backgroundColor="#FDFBF7" translucent />
 
       {/* TOP HEADER */}
       <View style={styles.topBar}>
@@ -330,8 +356,7 @@ export default function App() {
           <Text style={[styles.navTabText, currentScreen === 'reminders' && styles.navTabTextActive]}>Nhắc nhở</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
-    </SafeAreaProvider>
+    </View>
   );
 }
 

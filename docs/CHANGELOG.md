@@ -2,6 +2,10 @@
 
 Mọi thay đổi đáng kể của dự án được ghi nhận tại file này theo định dạng Keep a Changelog.
 
+## [0.1.6] - 2026-09-18
+### Fixed
+- Khắc phục triệt để lỗi tràn viền (Edge-to-Edge) trên thiết bị Android: bọc ứng dụng bằng `SafeAreaProvider` kèm `initialWindowMetrics`, tự động tính toán và áp dụng `topInset` (Status Bar insets) và `bottomInset` (System Navigation Bar 3 nút ảo), giúp thanh tiêu đề "LỊCH AN NHIÊN" và thanh Bottom Navigation Bar hiển thị hoàn toàn bên trong vùng an toàn (Safe Area), không bị che lấp.
+
 ## [0.1.5] - 2026-09-18
 ### Fixed
 - Chuyển đổi thành công component `SafeAreaView` sang `react-native-safe-area-context` chuẩn React Native mới nhất, bọc `SafeAreaProvider` loại bỏ triệt để cảnh báo deprecation.
