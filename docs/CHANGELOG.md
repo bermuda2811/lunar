@@ -2,6 +2,10 @@
 
 Mọi thay đổi đáng kể của dự án được ghi nhận tại file này theo định dạng Keep a Changelog.
 
+## [0.1.5] - 2026-09-18
+### Fixed
+- Chuyển đổi thành công component `SafeAreaView` sang `react-native-safe-area-context` chuẩn React Native mới nhất, bọc `SafeAreaProvider` loại bỏ triệt để cảnh báo deprecation.
+
 ## [0.1.4] - 2026-09-18
 ### Fixed
 - Tắt tự động tải Electron React Native DevTools standalone trên Linux để loại bỏ hoàn toàn lỗi cấp quyền `chrome-sandbox` (SUID 4755). Quá trình khởi động Metro Bundler và hiển thị mã QR trên terminal diễn ra sạch sẽ, không có thông báo lỗi.
