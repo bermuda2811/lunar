@@ -8,6 +8,9 @@ import {
   StatusBar as RNStatusBar,
   TextInput,
   Platform,
+  Modal,
+  Switch,
+  Alert,
 } from 'react-native';
 import {
   SafeAreaProvider,
@@ -36,6 +39,18 @@ export default function App() {
   );
 }
 
+interface MonthCell {
+  day: number;
+  month: number;
+  year: number;
+  isCurrentMonth: boolean;
+  lunarDay: number;
+  lunarMonth: number;
+  isGoodDay: boolean;
+  hasEvent: boolean;
+  isHoliday: boolean;
+}
+
 function MainApp() {
   const insets = useSafeAreaInsets();
   const topInset = Math.max(insets.top, Platform.OS === 'android' ? (RNStatusBar.currentHeight || 0) : 0);
@@ -43,6 +58,19 @@ function MainApp() {
 
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('daily_overview');
   const [currentDate, setCurrentDate] = useState<Date>(new Date(2026, 8, 16));
+  const [viewYear, setViewYear] = useState<number>(2026);
+  const [viewMonth, setViewMonth] = useState<number>(9);
+
+  // Settings State
+  const [settings, setSettings] = useState({
+    notificationsEnabled: true,
+    lunarDisplayMode: 'full' as 'full' | 'basic' | 'day_only',
+    theme: 'warm' as 'warm' | 'white' | 'dark',
+    fontSize: 'large' as 'standard' | 'large' | 'extra_large',
+    language: 'vi' as 'vi' | 'en',
+  });
+  const [activeModal, setActiveModal] = useState<null | 'lunar' | 'theme' | 'fontSize' | 'language' | 'about'>(null);
+
   const [reminders, setReminders] = useState([
     { id: '1', title: 'Sinh nhật Bà', date: '17/9/2026', lunar: '7/8 âm lịch', time: 'Cả ngày', completed: false, icon: '🎂' },
     { id: '2', title: 'Ngày giỗ Ông', date: '25/9/2026', lunar: '15/8 âm lịch', time: 'Cả ngày', completed: false, icon: '🪔' },
@@ -50,6 +78,14 @@ function MainApp() {
     { id: '4', title: 'Chuyến đi Đà Nẵng', date: '10/10/2026', lunar: '30/8 âm lịch', time: 'Cả ngày', completed: false, icon: '✈️' },
     { id: '5', title: 'Họp mặt gia đình', date: '2/10/2026', lunar: '22/8 âm lịch', time: '18:00', completed: false, icon: '👨‍👩‍👧‍👦' },
   ]);
+
+  const isDarkMode = settings.theme === 'dark';
+  const currentBg = isDarkMode ? '#0F172A' : settings.theme === 'white' ? '#FFFFFF' : '#FDFBF7';
+  const currentCardBg = isDarkMode ? '#1E293B' : '#FFFFFF';
+  const currentText = isDarkMode ? '#F8FAFC' : '#0F172A';
+  const currentSubText = isDarkMode ? '#94A3B8' : '#64748B';
+  const currentBorder = isDarkMode ? '#334155' : '#E2E8F0';
+  const fontMultiplier = settings.fontSize === 'extra_large' ? 1.2 : settings.fontSize === 'large' ? 1.1 : 1.0;
 
   const day = currentDate.getDate();
   const month = currentDate.getMonth() + 1;
@@ -60,20 +96,131 @@ function MainApp() {
     const d = new Date(currentDate);
     d.setDate(d.getDate() - 1);
     setCurrentDate(d);
+    setViewMonth(d.getMonth() + 1);
+    setViewYear(d.getFullYear());
   };
 
   const handleNextDay = () => {
     const d = new Date(currentDate);
     d.setDate(d.getDate() + 1);
     setCurrentDate(d);
+    setViewMonth(d.getMonth() + 1);
+    setViewYear(d.getFullYear());
   };
 
   const handleToday = () => {
-    setCurrentDate(new Date());
+    const now = new Date();
+    setCurrentDate(now);
+    setViewMonth(now.getMonth() + 1);
+    setViewYear(now.getFullYear());
   };
 
   const toggleReminder = (id: string) => {
     setReminders(reminders.map(r => r.id === id ? { ...r, completed: !r.completed } : r));
+  };
+
+  // Monthly Calendar Calculation (Mon = 0, ..., Sun = 6)
+  const firstDayOfMonth = new Date(viewYear, viewMonth - 1, 1);
+  const totalDaysInMonth = new Date(viewYear, viewMonth, 0).getDate();
+  const firstDayWeekday = firstDayOfMonth.getDay(); // 0 = Sun, 1 = Mon...
+  const startCol = (firstDayWeekday + 6) % 7;
+  const totalDaysPrevMonth = new Date(viewYear, viewMonth - 1, 0).getDate();
+
+  const monthCells: MonthCell[] = [];
+
+  // Trailing days from previous month
+  for (let i = startCol - 1; i >= 0; i--) {
+    const d = totalDaysPrevMonth - i;
+    const m = viewMonth === 1 ? 12 : viewMonth - 1;
+    const y = viewMonth === 1 ? viewYear - 1 : viewYear;
+    const lunar = solarToLunar(d, m, y);
+    const canChi = getCanChi(d, m, y, lunar.year, lunar.month);
+    const rating = getDayRating(canChi.dayChiIndex, (lunar.month + 1) % 12);
+    monthCells.push({
+      day: d,
+      month: m,
+      year: y,
+      isCurrentMonth: false,
+      lunarDay: lunar.day,
+      lunarMonth: lunar.month,
+      isGoodDay: rating.isGoodDay,
+      hasEvent: false,
+      isHoliday: false,
+    });
+  }
+
+  // Days of current month
+  for (let d = 1; d <= totalDaysInMonth; d++) {
+    const lunar = solarToLunar(d, viewMonth, viewYear);
+    const canChi = getCanChi(d, viewMonth, viewYear, lunar.year, lunar.month);
+    const rating = getDayRating(canChi.dayChiIndex, (lunar.month + 1) % 12);
+    const isSpecialEvent = (viewMonth === 9 && (d === 16 || d === 25)) || lunar.day === 15;
+    const isHoliday =
+      (viewMonth === 9 && d === 2) ||
+      (viewMonth === 1 && d === 1) ||
+      (viewMonth === 4 && d === 30) ||
+      (viewMonth === 5 && d === 1);
+
+    monthCells.push({
+      day: d,
+      month: viewMonth,
+      year: viewYear,
+      isCurrentMonth: true,
+      lunarDay: lunar.day,
+      lunarMonth: lunar.month,
+      isGoodDay: rating.isGoodDay,
+      hasEvent: isSpecialEvent,
+      isHoliday: isHoliday,
+    });
+  }
+
+  // Next month leading days to complete 35 or 42 slots
+  const totalSlots = monthCells.length > 35 ? 42 : 35;
+  const remainingSlots = totalSlots - monthCells.length;
+  for (let d = 1; d <= remainingSlots; d++) {
+    const m = viewMonth === 12 ? 1 : viewMonth + 1;
+    const y = viewMonth === 12 ? viewYear + 1 : viewYear;
+    const lunar = solarToLunar(d, m, y);
+    const canChi = getCanChi(d, m, y, lunar.year, lunar.month);
+    const rating = getDayRating(canChi.dayChiIndex, (lunar.month + 1) % 12);
+    monthCells.push({
+      day: d,
+      month: m,
+      year: y,
+      isCurrentMonth: false,
+      lunarDay: lunar.day,
+      lunarMonth: lunar.month,
+      isGoodDay: rating.isGoodDay,
+      hasEvent: false,
+      isHoliday: false,
+    });
+  }
+
+  const handlePrevMonth = () => {
+    if (viewMonth === 1) {
+      setViewMonth(12);
+      setViewYear(viewYear - 1);
+    } else {
+      setViewMonth(viewMonth - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (viewMonth === 12) {
+      setViewMonth(1);
+      setViewYear(viewYear + 1);
+    } else {
+      setViewMonth(viewMonth + 1);
+    }
+  };
+
+  const handleSelectMonthCell = (cell: MonthCell) => {
+    const d = new Date(cell.year, cell.month - 1, cell.day);
+    setCurrentDate(d);
+    if (!cell.isCurrentMonth) {
+      setViewMonth(cell.month);
+      setViewYear(cell.year);
+    }
   };
 
   return (
@@ -85,13 +232,14 @@ function MainApp() {
           paddingBottom: bottomInset,
           paddingLeft: insets.left,
           paddingRight: insets.right,
+          backgroundColor: currentBg,
         },
       ]}
     >
-      <RNStatusBar barStyle="dark-content" backgroundColor="#FDFBF7" translucent />
+      <RNStatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} backgroundColor={currentBg} translucent />
 
       {/* TOP HEADER */}
-      <View style={styles.topBar}>
+      <View style={[styles.topBar, { backgroundColor: currentCardBg, borderBottomColor: currentBorder }]}>
         {currentScreen !== 'daily_overview' && currentScreen !== 'monthly_calendar' && currentScreen !== 'reminders' && (
           <TouchableOpacity onPress={() => setCurrentScreen('daily_overview')} style={styles.iconBtn}>
             <Text style={styles.iconBtnText}>‹</Text>
@@ -257,22 +405,153 @@ function MainApp() {
 
         {/* 3. MÀN HÌNH XEM THÁNG - Screen 4 */}
         {currentScreen === 'monthly_calendar' && (
-          <View style={{ gap: 14 }}>
-            <Text style={{ textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>
-              Tháng {month} năm {year}
-            </Text>
-            <View style={styles.gridHeader}>
+          <View style={{ gap: 12 }}>
+            {/* Header Tháng & Nút chuyển tháng */}
+            <View style={[styles.monthHeaderRow, { backgroundColor: currentCardBg, borderColor: currentBorder }]}>
+              <TouchableOpacity onPress={handlePrevMonth} style={styles.roundBtn}>
+                <Text style={styles.roundBtnText}>‹</Text>
+              </TouchableOpacity>
+              <View style={{ alignItems: 'center' }}>
+                <Text style={[styles.monthHeaderTitle, { fontSize: 17 * fontMultiplier, color: currentText }]}>
+                  Tháng {viewMonth} năm {viewYear}
+                </Text>
+                <Text style={styles.monthHeaderSubtitle}>
+                  Năm {dayData.canChi.year}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={handleNextMonth} style={styles.roundBtn}>
+                <Text style={styles.roundBtnText}>›</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Hàng Tiêu Đề Thứ (T2 -> CN) */}
+            <View style={[styles.gridHeader, { backgroundColor: currentCardBg, borderColor: currentBorder }]}>
               {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((t, i) => (
-                <Text key={i} style={[styles.gridColHeader, i === 6 && { color: '#B3261E' }]}>{t}</Text>
+                <View key={i} style={styles.gridColHeaderBox}>
+                  <Text style={[styles.gridColHeader, i === 6 && { color: '#B3261E' }]}>{t}</Text>
+                </View>
               ))}
             </View>
-            {/* Calendar grid representation */}
-            <View style={styles.monthCardPreview}>
-              <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#B3261E' }}>
-                Ngày chọn: {day} tháng {month} (Âm lịch: {dayData.lunar.day}/{dayData.lunar.month})
+
+            {/* LƯỚI LỊCH THÁNG 7 CỘT CHUẨN WIREFRAME */}
+            <View style={[styles.monthGrid, { backgroundColor: currentCardBg, borderColor: currentBorder }]}>
+              {monthCells.map((cell, idx) => {
+                const isSelected =
+                  cell.day === currentDate.getDate() &&
+                  cell.month === (currentDate.getMonth() + 1) &&
+                  cell.year === currentDate.getFullYear();
+                const isSunday = idx % 7 === 6;
+
+                return (
+                  <TouchableOpacity
+                    key={idx}
+                    onPress={() => handleSelectMonthCell(cell)}
+                    activeOpacity={0.7}
+                    style={[
+                      styles.dayCell,
+                      isSelected && styles.dayCellSelected,
+                    ]}
+                  >
+                    {/* Số ngày Dương lịch */}
+                    <Text
+                      style={[
+                        styles.cellSolarText,
+                        { fontSize: 15 * fontMultiplier },
+                        isSelected
+                          ? styles.cellSolarSelected
+                          : cell.isCurrentMonth
+                          ? (isSunday ? styles.cellSunday : [styles.cellCurrentMonth, { color: currentText }])
+                          : styles.cellOtherMonth,
+                      ]}
+                    >
+                      {cell.day}
+                    </Text>
+
+                    {/* Số ngày Âm lịch */}
+                    <Text
+                      style={[
+                        styles.cellLunarText,
+                        { fontSize: 10 * fontMultiplier },
+                        isSelected
+                          ? styles.cellLunarSelected
+                          : (cell.lunarDay === 1 || cell.lunarDay === 15) && cell.isCurrentMonth
+                          ? styles.cellSpecialLunar
+                          : cell.isCurrentMonth
+                          ? styles.cellNormalLunar
+                          : styles.cellOtherLunar,
+                      ]}
+                    >
+                      {cell.lunarDay === 1 ? `${cell.lunarDay}/${cell.lunarMonth}` : cell.lunarDay}
+                    </Text>
+
+                    {/* Dấu chấm chỉ thị (Hoàng đạo / Sự kiện) */}
+                    <View style={styles.dotRow}>
+                      {cell.isCurrentMonth && (
+                        <>
+                          <View
+                            style={[
+                              styles.dot,
+                              isSelected
+                                ? { backgroundColor: '#FFF' }
+                                : cell.isGoodDay
+                                ? { backgroundColor: '#10B981' }
+                                : { backgroundColor: '#D97706' },
+                            ]}
+                          />
+                          {cell.hasEvent && (
+                            <View
+                              style={[
+                                styles.dot,
+                                isSelected ? { backgroundColor: '#FDE047' } : { backgroundColor: '#EF4444' },
+                              ]}
+                            />
+                          )}
+                        </>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            {/* Chú thích màu chấm */}
+            <View style={styles.legendRow}>
+              <View style={styles.legendItem}>
+                <View style={[styles.dot, { backgroundColor: '#10B981' }]} />
+                <Text style={styles.legendText}>Hoàng đạo</Text>
+              </View>
+              <View style={styles.legendItem}>
+                <View style={[styles.dot, { backgroundColor: '#D97706' }]} />
+                <Text style={styles.legendText}>Hắc đạo</Text>
+              </View>
+              <View style={styles.legendItem}>
+                <View style={[styles.dot, { backgroundColor: '#EF4444' }]} />
+                <Text style={styles.legendText}>Sự kiện / Lễ</Text>
+              </View>
+            </View>
+
+            {/* Thẻ tóm tắt ngày được chọn */}
+            <View style={[styles.monthCardPreview, { backgroundColor: currentCardBg, borderColor: currentBorder }]}>
+              <View style={styles.rowBetween}>
+                <Text style={[styles.previewDateTitle, { fontSize: 14 * fontMultiplier, color: currentText }]}>
+                  {dayData.solar.dayOfWeek}, {day} tháng {month} năm {year}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setCurrentScreen('daily_detail')}
+                  style={styles.detailBtnSmall}
+                >
+                  <Text style={styles.detailBtnSmallText}>Xem chi tiết ›</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.divider} />
+              <Text style={styles.previewLunarText}>
+                🌙 Âm lịch: Ngày {dayData.lunar.day} tháng {dayData.lunar.month} • Năm {dayData.canChi.year}
               </Text>
-              <Text style={{ fontSize: 13, color: '#444', marginTop: 4 }}>
-                ☘ {dayData.rating.label}: Thích hợp cưới hỏi, xuất hành, khai trương.
+              <Text style={styles.previewRatingText}>
+                {dayData.rating.isGoodDay ? '🍀' : '⚡'} {dayData.rating.label} (Ngày {dayData.canChi.day})
+              </Text>
+              <Text style={[styles.bodyText, { fontSize: 12 * fontMultiplier, color: currentSubText }]}>
+                Thích hợp: {dayData.rating.suitableFor.slice(0, 3).join(', ')}
               </Text>
             </View>
           </View>
@@ -282,17 +561,17 @@ function MainApp() {
         {currentScreen === 'reminders' && (
           <View style={{ gap: 12 }}>
             <View style={styles.rowBetween}>
-              <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Danh sách nhắc nhở</Text>
+              <Text style={[styles.boldTitle, { fontSize: 16 * fontMultiplier, color: currentText }]}>Danh sách nhắc nhở</Text>
               <TouchableOpacity onPress={() => setCurrentScreen('add_reminder')} style={styles.addBtnSmall}>
                 <Text style={{ color: '#fff', fontWeight: 'bold' }}>+ Thêm</Text>
               </TouchableOpacity>
             </View>
             {reminders.map(r => (
-              <TouchableOpacity key={r.id} onPress={() => toggleReminder(r.id)} style={styles.reminderCard}>
+              <TouchableOpacity key={r.id} onPress={() => toggleReminder(r.id)} style={[styles.reminderCard, { backgroundColor: currentCardBg, borderColor: currentBorder }]}>
                 <Text style={{ fontSize: 24 }}>{r.icon}</Text>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.remTitle, r.completed && { textDecorationLine: 'line-through', color: '#888' }]}>{r.title}</Text>
-                  <Text style={styles.remDate}>{r.date} ({r.lunar}) • {r.time}</Text>
+                  <Text style={[styles.remTitle, { fontSize: 14 * fontMultiplier, color: currentText }, r.completed && { textDecorationLine: 'line-through', color: '#888' }]}>{r.title}</Text>
+                  <Text style={[styles.remDate, { color: currentSubText }]}>{r.date} ({r.lunar}) • {r.time}</Text>
                 </View>
                 <View style={[styles.checkCircle, r.completed && styles.checkCircleActive]}>
                   {r.completed && <Text style={{ color: '#fff', fontSize: 12 }}>✓</Text>}
@@ -305,57 +584,385 @@ function MainApp() {
         {/* 5. MÀN HÌNH THÊM NHẮC NHỞ - Screen 6 */}
         {currentScreen === 'add_reminder' && (
           <View style={{ gap: 14 }}>
-            <Text style={styles.formLabel}>Tên nhắc nhở *</Text>
-            <TextInput style={styles.input} placeholder="Ví dụ: Ngày giỗ Ông" placeholderTextColor="#999" />
-            <Text style={styles.formLabel}>Ngày nhắc (Dương lịch hoặc Âm lịch)</Text>
-            <TextInput style={styles.input} defaultValue="25/09/2026 (15/8 âm lịch)" />
-            <Text style={styles.formLabel}>Lặp lại</Text>
-            <TextInput style={styles.input} defaultValue="Hàng năm" />
+            <Text style={[styles.formLabel, { color: currentText }]}>Tên nhắc nhở *</Text>
+            <TextInput style={[styles.input, { backgroundColor: currentCardBg, borderColor: currentBorder, color: currentText }]} placeholder="Ví dụ: Ngày giỗ Ông" placeholderTextColor="#999" />
+            <Text style={[styles.formLabel, { color: currentText }]}>Ngày nhắc (Dương lịch hoặc Âm lịch)</Text>
+            <TextInput style={[styles.input, { backgroundColor: currentCardBg, borderColor: currentBorder, color: currentText }]} defaultValue="25/09/2026 (15/8 âm lịch)" />
+            <Text style={[styles.formLabel, { color: currentText }]}>Lặp lại</Text>
+            <TextInput style={[styles.input, { backgroundColor: currentCardBg, borderColor: currentBorder, color: currentText }]} defaultValue="Hàng năm" />
             <TouchableOpacity onPress={() => setCurrentScreen('reminders')} style={styles.submitBtn}>
               <Text style={styles.submitBtnText}>Lưu nhắc nhở</Text>
             </TouchableOpacity>
           </View>
         )}
 
-        {/* 6. MÀN HÌNH CÀI ĐẶT - Screen 7 */}
+        {/* 6. MÀN HÌNH CÀI ĐẶT - Screen 7 (100% ACTIONS HOẠT ĐỘNG) */}
         {currentScreen === 'settings' && (
-          <View style={{ gap: 10 }}>
-            {['🔔 Thông báo (Bật)', '🌙 Lịch âm (Hiển thị đầy đủ)', '🎨 Giao diện (Sáng ấm)', '🔤 Cỡ chữ (Lớn cho người cao tuổi)', '🌐 Ngôn ngữ (Tiếng Việt)', 'ℹ️ Giới thiệu ứng dụng'].map((s, i) => (
-              <View key={i} style={styles.settingsRow}>
-                <Text style={styles.settingsText}>{s}</Text>
-                <Text style={{ color: '#999' }}>›</Text>
+          <View style={{ gap: 12 }}>
+            {/* 1. Thông báo */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => {
+                const nextVal = !settings.notificationsEnabled;
+                setSettings({ ...settings, notificationsEnabled: nextVal });
+                Alert.alert(
+                  'Thông báo nhắc nhở',
+                  nextVal
+                    ? 'Đã BẬT thông báo nhắc nhở các ngày lễ tết, sóc vọng (mùng 1, hôm rằm).'
+                    : 'Đã TẮT thông báo nhắc nhở.'
+                );
+              }}
+              style={[styles.settingsRow, { backgroundColor: currentCardBg, borderColor: currentBorder }]}
+            >
+              <View style={styles.settingsLeft}>
+                <View style={[styles.settingsIconBox, { backgroundColor: '#FEE2E2' }]}>
+                  <Text style={{ fontSize: 18 }}>🔔</Text>
+                </View>
+                <View>
+                  <Text style={[styles.settingsTitle, { fontSize: 14 * fontMultiplier, color: currentText }]}>Thông báo</Text>
+                  <Text style={[styles.settingsSubTitle, { color: currentSubText }]}>Nhắc nhở lễ tết, mùng 1, ngày rằm</Text>
+                </View>
               </View>
-            ))}
+              <Switch
+                value={settings.notificationsEnabled}
+                onValueChange={(val) => {
+                  setSettings({ ...settings, notificationsEnabled: val });
+                }}
+                trackColor={{ false: '#CBD5E1', true: '#B3261E' }}
+                thumbColor="#FFF"
+              />
+            </TouchableOpacity>
+
+            {/* 2. Lịch âm */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setActiveModal('lunar')}
+              style={[styles.settingsRow, { backgroundColor: currentCardBg, borderColor: currentBorder }]}
+            >
+              <View style={styles.settingsLeft}>
+                <View style={[styles.settingsIconBox, { backgroundColor: '#FEF3C7' }]}>
+                  <Text style={{ fontSize: 18 }}>🌙</Text>
+                </View>
+                <View>
+                  <Text style={[styles.settingsTitle, { fontSize: 14 * fontMultiplier, color: currentText }]}>Lịch âm</Text>
+                  <Text style={[styles.settingsSubTitle, { color: currentSubText }]}>
+                    {settings.lunarDisplayMode === 'full'
+                      ? 'Hiển thị đầy đủ (Can Chi, Tiết khí)'
+                      : settings.lunarDisplayMode === 'basic'
+                      ? 'Cơ bản (Ngày & Tháng âm)'
+                      : 'Chỉ số ngày âm'}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.settingsArrow}>›</Text>
+            </TouchableOpacity>
+
+            {/* 3. Giao diện */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setActiveModal('theme')}
+              style={[styles.settingsRow, { backgroundColor: currentCardBg, borderColor: currentBorder }]}
+            >
+              <View style={styles.settingsLeft}>
+                <View style={[styles.settingsIconBox, { backgroundColor: '#E0E7FF' }]}>
+                  <Text style={{ fontSize: 18 }}>🎨</Text>
+                </View>
+                <View>
+                  <Text style={[styles.settingsTitle, { fontSize: 14 * fontMultiplier, color: currentText }]}>Giao diện</Text>
+                  <Text style={[styles.settingsSubTitle, { color: currentSubText }]}>
+                    {settings.theme === 'warm'
+                      ? 'Sáng ấm (Giấy dó truyền thống)'
+                      : settings.theme === 'white'
+                      ? 'Sáng tiêu chuẩn (Trắng)'
+                      : 'Tối dịu (Bảo vệ mắt)'}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.settingsArrow}>›</Text>
+            </TouchableOpacity>
+
+            {/* 4. Cỡ chữ (Phù hợp người cao tuổi) */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setActiveModal('fontSize')}
+              style={[styles.settingsRow, { backgroundColor: currentCardBg, borderColor: currentBorder }]}
+            >
+              <View style={styles.settingsLeft}>
+                <View style={[styles.settingsIconBox, { backgroundColor: '#DCFCE7' }]}>
+                  <Text style={{ fontSize: 18 }}>🔤</Text>
+                </View>
+                <View>
+                  <Text style={[styles.settingsTitle, { fontSize: 14 * fontMultiplier, color: currentText }]}>Cỡ chữ</Text>
+                  <Text style={[styles.settingsSubTitle, { color: '#0F5132', fontWeight: '700' }]}>
+                    {settings.fontSize === 'extra_large'
+                      ? 'Rất lớn (24px - Dễ đọc nhất)'
+                      : settings.fontSize === 'large'
+                      ? 'Lớn (20px - Cho người cao tuổi)'
+                      : 'Tiêu chuẩn (16px)'}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.settingsArrow}>›</Text>
+            </TouchableOpacity>
+
+            {/* 5. Ngôn ngữ */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setActiveModal('language')}
+              style={[styles.settingsRow, { backgroundColor: currentCardBg, borderColor: currentBorder }]}
+            >
+              <View style={styles.settingsLeft}>
+                <View style={[styles.settingsIconBox, { backgroundColor: '#E0F2FE' }]}>
+                  <Text style={{ fontSize: 18 }}>🌐</Text>
+                </View>
+                <View>
+                  <Text style={[styles.settingsTitle, { fontSize: 14 * fontMultiplier, color: currentText }]}>Ngôn ngữ</Text>
+                  <Text style={[styles.settingsSubTitle, { color: currentSubText }]}>
+                    {settings.language === 'vi' ? 'Tiếng Việt (Mặc định)' : 'English'}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.settingsArrow}>›</Text>
+            </TouchableOpacity>
+
+            {/* 6. Giới thiệu ứng dụng */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setActiveModal('about')}
+              style={[styles.settingsRow, { backgroundColor: currentCardBg, borderColor: currentBorder }]}
+            >
+              <View style={styles.settingsLeft}>
+                <View style={[styles.settingsIconBox, { backgroundColor: '#F3E8FF' }]}>
+                  <Text style={{ fontSize: 18 }}>ℹ️</Text>
+                </View>
+                <View>
+                  <Text style={[styles.settingsTitle, { fontSize: 14 * fontMultiplier, color: currentText }]}>Giới thiệu ứng dụng</Text>
+                  <Text style={[styles.settingsSubTitle, { color: currentSubText }]}>Phiên bản 1.0.0 (Bính Ngọ 2026)</Text>
+                </View>
+              </View>
+              <Text style={styles.settingsArrow}>›</Text>
+            </TouchableOpacity>
+
+            {/* Nút khôi phục cài đặt mặc định */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => {
+                setSettings({
+                  notificationsEnabled: true,
+                  lunarDisplayMode: 'full',
+                  theme: 'warm',
+                  fontSize: 'large',
+                  language: 'vi',
+                });
+                Alert.alert('Thành công', 'Đã khôi phục toàn bộ cài đặt về mặc định ban đầu.');
+              }}
+              style={[styles.resetSettingsBtn, { backgroundColor: currentCardBg, borderColor: currentBorder }]}
+            >
+              <Text style={styles.resetSettingsBtnText}>🔄 Khôi phục cài đặt mặc định</Text>
+            </TouchableOpacity>
           </View>
         )}
       </ScrollView>
 
       {/* BOTTOM TAB NAVIGATION (3 Tabs chuẩn Wireframe) */}
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { backgroundColor: currentCardBg, borderTopColor: currentBorder }]}>
         <TouchableOpacity
           onPress={() => setCurrentScreen('daily_overview')}
           style={[styles.navTab, currentScreen === 'daily_overview' && styles.navTabActive]}
         >
-          <Text style={{ fontSize: 18 }}>📅</Text>
-          <Text style={[styles.navTabText, currentScreen === 'daily_overview' && styles.navTabTextActive]}>Lịch ngày</Text>
+          <Text style={{ fontSize: 18 * fontMultiplier }}>📅</Text>
+          <Text style={[styles.navTabText, currentScreen === 'daily_overview' && styles.navTabTextActive, { fontSize: 11 * fontMultiplier }]}>Lịch ngày</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => setCurrentScreen('monthly_calendar')}
+          onPress={() => {
+            setViewMonth(currentDate.getMonth() + 1);
+            setViewYear(currentDate.getFullYear());
+            setCurrentScreen('monthly_calendar');
+          }}
           style={[styles.navTab, currentScreen === 'monthly_calendar' && styles.navTabActive]}
         >
-          <Text style={{ fontSize: 18 }}>🗓️</Text>
-          <Text style={[styles.navTabText, currentScreen === 'monthly_calendar' && styles.navTabTextActive]}>Lịch tháng</Text>
+          <Text style={{ fontSize: 18 * fontMultiplier }}>🗓️</Text>
+          <Text style={[styles.navTabText, currentScreen === 'monthly_calendar' && styles.navTabTextActive, { fontSize: 11 * fontMultiplier }]}>Lịch tháng</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => setCurrentScreen('reminders')}
           style={[styles.navTab, currentScreen === 'reminders' && styles.navTabActive]}
         >
-          <Text style={{ fontSize: 18 }}>🔔</Text>
-          <Text style={[styles.navTabText, currentScreen === 'reminders' && styles.navTabTextActive]}>Nhắc nhở</Text>
+          <Text style={{ fontSize: 18 * fontMultiplier }}>🔔</Text>
+          <Text style={[styles.navTabText, currentScreen === 'reminders' && styles.navTabTextActive, { fontSize: 11 * fontMultiplier }]}>Nhắc nhở</Text>
         </TouchableOpacity>
       </View>
+
+      {/* MODAL DIALOGS CHO CÀI ĐẶT */}
+      <Modal
+        visible={activeModal !== null}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setActiveModal(null)}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setActiveModal(null)}
+          style={styles.modalOverlay}
+        >
+          <TouchableOpacity activeOpacity={1} style={[styles.modalBox, { backgroundColor: currentCardBg }]}>
+            {/* 1. Modal Lịch Âm */}
+            {activeModal === 'lunar' && (
+              <View style={{ gap: 14 }}>
+                <Text style={[styles.modalTitle, { color: currentText }]}>Chế độ hiển thị Âm lịch</Text>
+                {[
+                  { id: 'full', title: 'Đầy đủ (Khuyên dùng)', desc: 'Hiện số ngày âm, tháng âm, Can Chi và Tiết khí' },
+                  { id: 'basic', title: 'Cơ bản', desc: 'Chỉ hiển thị số ngày và tháng âm' },
+                  { id: 'day_only', title: 'Chỉ số ngày âm', desc: 'Hiển thị tối giản duy nhất số ngày' },
+                ].map((item) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    onPress={() => {
+                      setSettings({ ...settings, lunarDisplayMode: item.id as any });
+                      setActiveModal(null);
+                    }}
+                    style={[
+                      styles.modalOptionRow,
+                      settings.lunarDisplayMode === item.id && styles.modalOptionSelected,
+                    ]}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.modalOptionTitle}>{item.title}</Text>
+                      <Text style={styles.modalOptionDesc}>{item.desc}</Text>
+                    </View>
+                    {settings.lunarDisplayMode === item.id && (
+                      <Text style={styles.modalCheckmark}>✓</Text>
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            {/* 2. Modal Giao Diện */}
+            {activeModal === 'theme' && (
+              <View style={{ gap: 14 }}>
+                <Text style={[styles.modalTitle, { color: currentText }]}>Chọn giao diện hiển thị</Text>
+                {[
+                  { id: 'warm', title: 'Sáng ấm (Mặc định)', desc: 'Màu giấy dó truyền thống, dịu mắt, ấm cúng' },
+                  { id: 'white', title: 'Sáng tiêu chuẩn', desc: 'Nền trắng sáng hiện đại, tương phản sắc nét' },
+                  { id: 'dark', title: 'Tối dịu', desc: 'Nền sẫm màu, bảo vệ mắt khi xem ban đêm' },
+                ].map((item) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    onPress={() => {
+                      setSettings({ ...settings, theme: item.id as any });
+                      setActiveModal(null);
+                    }}
+                    style={[
+                      styles.modalOptionRow,
+                      settings.theme === item.id && styles.modalOptionSelected,
+                    ]}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.modalOptionTitle}>{item.title}</Text>
+                      <Text style={styles.modalOptionDesc}>{item.desc}</Text>
+                    </View>
+                    {settings.theme === item.id && (
+                      <Text style={styles.modalCheckmark}>✓</Text>
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            {/* 3. Modal Cỡ Chữ */}
+            {activeModal === 'fontSize' && (
+              <View style={{ gap: 14 }}>
+                <Text style={[styles.modalTitle, { color: currentText }]}>Chọn cỡ chữ hiển thị</Text>
+                {[
+                  { id: 'standard', title: 'Tiêu chuẩn (16px)', desc: 'Kích thước chuẩn, hiển thị nhiều nội dung' },
+                  { id: 'large', title: 'Lớn — Cho người cao tuổi (20px)', desc: 'Khuyên dùng: Chữ to rõ, thoáng đãng, dễ bấm' },
+                  { id: 'extra_large', title: 'Rất lớn (24px)', desc: 'Chữ cực to, dễ đọc nhất, không cần kính lão' },
+                ].map((item) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    onPress={() => {
+                      setSettings({ ...settings, fontSize: item.id as any });
+                      setActiveModal(null);
+                    }}
+                    style={[
+                      styles.modalOptionRow,
+                      settings.fontSize === item.id && styles.modalOptionSelected,
+                    ]}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.modalOptionTitle}>{item.title}</Text>
+                      <Text style={styles.modalOptionDesc}>{item.desc}</Text>
+                    </View>
+                    {settings.fontSize === item.id && (
+                      <Text style={styles.modalCheckmark}>✓</Text>
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            {/* 4. Modal Ngôn Ngữ */}
+            {activeModal === 'language' && (
+              <View style={{ gap: 14 }}>
+                <Text style={[styles.modalTitle, { color: currentText }]}>Ngôn ngữ (Language)</Text>
+                {[
+                  { id: 'vi', title: 'Tiếng Việt', desc: 'Ngôn ngữ mặc định của ứng dụng' },
+                  { id: 'en', title: 'English', desc: 'Vietnamese Lunar Calendar for English speakers' },
+                ].map((item) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    onPress={() => {
+                      setSettings({ ...settings, language: item.id as any });
+                      setActiveModal(null);
+                    }}
+                    style={[
+                      styles.modalOptionRow,
+                      settings.language === item.id && styles.modalOptionSelected,
+                    ]}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.modalOptionTitle}>{item.title}</Text>
+                      <Text style={styles.modalOptionDesc}>{item.desc}</Text>
+                    </View>
+                    {settings.language === item.id && (
+                      <Text style={styles.modalCheckmark}>✓</Text>
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            {/* 5. Modal Giới Thiệu */}
+            {activeModal === 'about' && (
+              <View style={{ gap: 12, alignItems: 'center' }}>
+                <View style={styles.aboutLogoBox}>
+                  <Text style={{ fontSize: 28, color: '#FFF', fontWeight: '900' }}>L</Text>
+                </View>
+                <Text style={[styles.aboutAppName, { color: currentText }]}>Lịch An Nhiên (Lịch Việt)</Text>
+                <Text style={styles.aboutVersion}>Phiên bản 1.0.0 (Bính Ngọ 2026)</Text>
+                <View style={styles.aboutQuoteBox}>
+                  <Text style={styles.aboutQuoteText}>
+                    "Giữ truyền thống, gần gũi mỗi ngày! Thiết kế đơn giản – Rõ ràng – Dễ sử dụng – Phù hợp cho người cao tuổi."
+                  </Text>
+                </View>
+                <Text style={styles.aboutAlgoCredit}>
+                  Thuật toán thiên văn Âm Dương chuẩn Hồ Ngọc Đức (Múi giờ UTC+7 Việt Nam).
+                </Text>
+              </View>
+            )}
+
+            <TouchableOpacity
+              onPress={() => setActiveModal(null)}
+              style={styles.modalCloseBtn}
+            >
+              <Text style={styles.modalCloseBtnText}>Đóng</Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -630,43 +1237,165 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#0F172A',
   },
+  monthHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  monthHeaderTitle: {
+    fontWeight: '800',
+  },
+  monthHeaderSubtitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#B3261E',
+    marginTop: 2,
+  },
   gridHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
     paddingVertical: 8,
-    backgroundColor: '#FFF',
     borderRadius: 12,
+    borderWidth: 1,
+  },
+  gridColHeaderBox: {
+    flex: 1,
+    alignItems: 'center',
   },
   gridColHeader: {
     fontSize: 13,
     fontWeight: '800',
     color: '#475569',
   },
+  monthGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    borderRadius: 16,
+    padding: 4,
+    borderWidth: 1,
+  },
+  dayCell: {
+    width: '14.285%',
+    minHeight: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  dayCellSelected: {
+    backgroundColor: '#B3261E',
+  },
+  cellSolarText: {
+    fontWeight: '700',
+  },
+  cellSolarSelected: {
+    color: '#FFF',
+    fontWeight: '800',
+  },
+  cellCurrentMonth: {
+    color: '#0F172A',
+  },
+  cellSunday: {
+    color: '#B3261E',
+  },
+  cellOtherMonth: {
+    color: '#CBD5E1',
+    fontWeight: '500',
+  },
+  cellLunarText: {
+    marginTop: 1,
+  },
+  cellLunarSelected: {
+    color: '#FFCDD2',
+    fontWeight: '700',
+  },
+  cellNormalLunar: {
+    color: '#64748B',
+    fontWeight: '600',
+  },
+  cellSpecialLunar: {
+    color: '#B3261E',
+    fontWeight: '800',
+  },
+  cellOtherLunar: {
+    color: '#E2E8F0',
+  },
+  dotRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 3,
+    height: 6,
+    marginTop: 2,
+  },
+  dot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+  },
+  legendRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16,
+    paddingVertical: 2,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  legendText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#64748B',
+  },
   monthCardPreview: {
     padding: 16,
-    backgroundColor: '#FFF',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    gap: 6,
+  },
+  previewDateTitle: {
+    fontWeight: '800',
+  },
+  detailBtnSmall: {
+    backgroundColor: '#B3261E',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  detailBtnSmallText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  previewLunarText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#B3261E',
+  },
+  previewRatingText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#0F5132',
+    marginTop: 2,
   },
   reminderCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     padding: 14,
-    backgroundColor: '#FFF',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
   },
   remTitle: {
-    fontSize: 14,
     fontWeight: '700',
-    color: '#0F172A',
   },
   remDate: {
     fontSize: 12,
-    color: '#64748B',
     marginTop: 2,
   },
   checkCircle: {
@@ -691,17 +1420,13 @@ const styles = StyleSheet.create({
   formLabel: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#334155',
   },
   input: {
-    backgroundColor: '#FFF',
     borderWidth: 1,
-    borderColor: '#CBD5E1',
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 14,
-    color: '#0F172A',
   },
   submitBtn: {
     backgroundColor: '#B3261E',
@@ -717,23 +1442,158 @@ const styles = StyleSheet.create({
   },
   settingsRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
-    backgroundColor: '#FFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    minHeight: 64,
+  },
+  settingsLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  settingsIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  settingsTitle: {
+    fontWeight: '700',
+  },
+  settingsSubTitle: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  settingsArrow: {
+    fontSize: 22,
+    color: '#94A3B8',
+    fontWeight: '600',
+    paddingLeft: 8,
+  },
+  resetSettingsBtn: {
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  resetSettingsBtnText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#B3261E',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalBox: {
+    width: '100%',
+    maxWidth: 360,
+    borderRadius: 20,
+    padding: 20,
+    gap: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  modalOptionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 14,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
   },
-  settingsText: {
+  modalOptionSelected: {
+    borderColor: '#B3261E',
+    backgroundColor: '#FFF1F2',
+  },
+  modalOptionTitle: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#0F172A',
+  },
+  modalOptionDesc: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  modalCheckmark: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#B3261E',
+    marginLeft: 8,
+  },
+  modalCloseBtn: {
+    backgroundColor: '#B3261E',
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  modalCloseBtnText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  aboutLogoBox: {
+    width: 60,
+    height: 60,
+    borderRadius: 18,
+    backgroundColor: '#B3261E',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  aboutAppName: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  aboutVersion: {
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '600',
+  },
+  aboutQuoteBox: {
+    backgroundColor: '#FFFBF5',
+    borderWidth: 1,
+    borderColor: '#EFE5D5',
+    borderRadius: 12,
+    padding: 12,
+    width: '100%',
+  },
+  aboutQuoteText: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: '#475569',
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  aboutAlgoCredit: {
+    fontSize: 11,
+    color: '#94A3B8',
+    textAlign: 'center',
+    lineHeight: 16,
   },
   bottomNav: {
     flexDirection: 'row',
     borderTopWidth: 1,
-    borderTopColor: '#EEE',
-    backgroundColor: '#FFF',
     paddingVertical: 8,
   },
   navTab: {
@@ -743,7 +1603,6 @@ const styles = StyleSheet.create({
   },
   navTabActive: {},
   navTabText: {
-    fontSize: 11,
     fontWeight: '600',
     color: '#64748B',
   },
