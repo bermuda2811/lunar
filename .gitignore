@@ -1,0 +1,9 @@
+node_modules/
+dist/
+build/
+.expo/
+.vite/
+*.log
+.DS_Store
+backend/data/*.db-shm
+backend/data/*.db-wal

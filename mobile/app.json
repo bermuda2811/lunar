@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Lịch An Nhiên",
+    "slug": "lich-an-nhien",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#FDFBF7",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lichviet.annhien"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#B3261E"
+      },
+      "package": "com.lichviet.annhien"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}

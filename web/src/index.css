@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Custom mobile phone frame styling */
+.mobile-frame-shadow {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45), 0 0 0 12px #111827;
+}
+
+/* Hide scrollbar for clean mobile experience */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
