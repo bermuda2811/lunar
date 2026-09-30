@@ -59,3 +59,47 @@
 - Nền trắng, đổ bóng nhẹ mềm mại `rgba(0,0,0,0.05)`.
 - Icon minh họa trong vòng tròn màu pastel tương ứng (Bánh sinh nhật màu đỏ, Bát hương màu nâu đỏ, v.v.).
 - Checkbox kích thước lớn 24x24px, dễ dàng bấm chọn.
+
+### 4.4. Nút Profile trên Header & Thẻ Tài khoản (Màn hình 2 & 7)
+- Biểu tượng Header: Sử dụng icon Người dùng (`User`) thân thiện thay thế cho icon bánh răng cơ khí để biểu thị tính chất tài khoản cá nhân.
+- Thẻ Tài khoản: Hiển thị avatar tròn (ký tự chữ cái đầu của email màu đỏ hoặc icon khách màu xám), email/trạng thái lưu trữ, và nút chuyển sang đăng nhập email hoặc đăng xuất rõ ràng.
+
+### 4.5. Thẻ & Màn hình Ủng hộ nhà phát triển (Màn hình 7 & 13)
+- Thẻ nổi bật màu hồng ấm `#FFF1F2`, viền `#FECDD3` với icon trái tim đỏ mang lại cảm xúc gắn kết và ấm áp.
+- 4 thẻ mức ủng hộ dạng nút bấm lớn dễ chọn.
+- Ảnh mã VietQR tạo động theo chuẩn ngân hàng, khung bo tròn mềm mại.
+- Cụm thông tin chuyển khoản có nút "Sao chép" kèm phản hồi trực quan (icon tích xanh).
+
+### 4.6. Đồng nhất 100% trải nghiệm Webview & Mobile
+- Toàn bộ bố cục, hệ màu, kích thước font chữ, khoảng cách padding/margin và các tương tác chạm được thiết kế đồng nhất 1:1 giữa bản Native (React Native Expo) và bản Web (React Web).
+
+### 4.7. Giao diện Web Desktop Đa Cột & Chế Độ Xem Trước Mobile (Mobile Review)
+- **Giao diện Web Desktop (`/`)**:
+  - Bố cục lưới đa cột tối ưu cho màn hình máy tính (PC, Laptop, Màn hình rộng) nhưng co giãn mượt mà (responsive) khi truy cập bằng trình duyệt di động.
+  - Cột 1 (Tờ lịch xé block bàn): Giữ nguyên phong vị tờ lịch treo tường truyền thống Việt Nam, số ngày Dương to rõ (96px+), khối Âm lịch Bính Ngọ nổi bật, Can Chi 4 trụ, Tiết khí và lời chúc an nhiên.
+  - Cột 2 (Chi tiết Phong thủy & Giờ Hoàng Đạo): Lưới 12 giờ Can Chi thời gian thực (đánh dấu giờ hiện tại), hướng xuất hành cát lành (Hỷ Thần, Tài Thần), danh sách việc nên làm và kiêng cữ.
+  - Cột 3 (Tiện ích đồng hành): Lịch tháng mini bấm chọn ngày tức thì, danh sách ngày giỗ nhắc nhở cá nhân, banner sự kiện lễ hội sắp tới.
+  - Hệ thống Tab tiện ích toàn diện: Tờ Lịch Hôm Nay, Lịch Tháng Toàn Cảnh, Bách Khoa Lễ Tết, Đổi Ngày Âm Dương Chuẩn Thiên Văn, Quản Lý Nhắc Nhở, và Trang Ủng Hộ VietQR.
+### 4.8. Quy Chuẩn Header Tinh Gọn 1 Dòng (Single-Line 56px Header)
+- **Chiều cao chuẩn mực**: Cố định `56px` (`h-14`), mỏng nhẹ, thanh thoát, không chiếm dụng diện tích dọc của trang.
+- **Thương hiệu 1 hàng ngang**: Khối logo đỏ `[L]` + Tên thương hiệu `LỊCH AN NHIÊN` + Huy hiệu `Bính Ngọ 2026` trên cùng 1 hàng, loại bỏ slogan phụ gây 2 dòng.
+- **Thanh Navigation 5 Tab Vàng**: Bố trí chính giữa trang, container dạng viên thuốc `bg-slate-100/90`, chỉ gồm 5 tab cốt lõi: `[Hôm Nay] [Lịch Tháng] [Lễ Tết] [Nhắc Nhở] [Ủng Hộ]`.
+- **Cụm ngày chuyển đổi tích hợp**: Tích hợp nút nhảy về "Hôm nay" trực tiếp vào trong Widget chuyển ngày `[ < ] [ dd/mm/yyyy • Hôm nay ] [ > ]`, không để nút "Hôm nay" rời rạc bên ngoài.
+- **Loại bỏ nút tìm kiếm rời rạc trên Header**: Chức năng tìm kiếm và tra cứu được đưa trực tiếp vào đầu tab "Lễ Tết & Sự Kiện".
+
+### 4.9. Tối Ưu Phân Khối Tính Năng Theo Ngữ Cảnh Sử Dụng (Contextual Feature Placement)
+1. **Widget Chuyển Ngày Thống Nhất (Unified Date Stepper)**:
+   - Áp dụng trên cả Desktop Header, Mobile Quick Stepper và chân thẻ lịch xé.
+   - Khi đang ở ngày hôm nay: Hiển thị badge xanh `Hôm nay`.
+   - Khi đang xem ngày khác: Hiển thị nút bấm `Hôm nay` dạng chip nổi bật, bấm 1 chạm quay về ngày hiện tại.
+2. **Tìm Kiếm & Bộ Lọc Sự Kiện Trong Tab Lễ Tết**:
+   - Ô tìm kiếm nổi bật với icon kính lúp và nút xóa nhanh (Clear input).
+   - Bộ lọc danh mục trực quan: Tất Cả, Lễ Hội Truyền Thống, Quốc Lễ Việt Nam, Lễ Quốc Tế, Tri Ân & Văn Hóa.
+   - Hiển thị số lượng kết quả tức thời và trạng thái rỗng thân thiện (Empty state).
+3. **Công Cụ Đổi Ngày Âm – Dương Trong Menu Tài Khoản**:
+   - Tách biệt thanh điều hướng chính (giữ 5 tabs sạch sẽ) khỏi công cụ tiện ích.
+   - Modal Tài khoản tích hợp 2 sub-tabs: `[ 👤 Tài Khoản ]` và `[ 🔄 Đổi Ngày Âm – Dương ]`.
+   - Cung cấp nút chuyển đổi 2 chiều chuẩn thiên văn (Hồ Ngọc Đức) và nút "Xem tờ lịch ngày này" để đóng modal và nhảy ngay đến ngày đã tra cứu.
+
+
+

@@ -1,267 +1,351 @@
-import Database from 'better-sqlite3';
-import path from 'path';
-import fs from 'fs';
+import dns from 'dns';
+import mysql, { Pool } from 'mysql2/promise';
+import dotenv from 'dotenv';
 
-const dataDir = path.resolve(__dirname, '../data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
+dotenv.config();
+
+const rawHost = process.env.DB_HOST || '127.0.0.1';
+const dbPort = parseInt(process.env.DB_PORT || '3306', 10);
+const dbUser = process.env.DB_USERNAME || process.env.DB_USER || 'root';
+const dbPassword = process.env.DB_PASSWORD || 'thanhtrung@#@1';
+const dbName = process.env.DB_DATABASE || process.env.DB_NAME || 'lich_an_nhien';
+
+let poolInstance: Pool | null = null;
+
+export async function getPool(): Promise<Pool> {
+  if (!poolInstance) {
+    let resolvedHost = rawHost;
+    if (rawHost === 'mysql') {
+      try {
+        await dns.promises.lookup('mysql');
+        resolvedHost = 'mysql';
+      } catch {
+        // Khi chạy trực tiếp trên máy host (ngoài mạng docker), 'mysql' chưa trỏ DNS
+        // Tự động kết nối tới port 3306 được ánh xạ ở 127.0.0.1
+        resolvedHost = '127.0.0.1';
+      }
+    }
+
+    poolInstance = mysql.createPool({
+      host: resolvedHost,
+      port: dbPort,
+      user: dbUser,
+      password: dbPassword,
+      database: dbName,
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0,
+    });
+  }
+  return poolInstance;
 }
 
-const dbPath = path.join(dataDir, 'calendar.db');
-export const db = new Database(dbPath);
+export const pool: Pool = new Proxy({} as Pool, {
+  get(target, prop) {
+    return async (...args: any[]) => {
+      const realPool = await getPool();
+      const fn = (realPool as any)[prop];
+      if (typeof fn === 'function') {
+        return fn.apply(realPool, args);
+      }
+      return fn;
+    };
+  }
+});
 
-// Enable WAL mode for better concurrency and performance
-db.pragma('journal_mode = WAL');
+export const db = {
+  async query<T = any>(sql: string, params: any[] = []): Promise<T[]> {
+    const [rows] = await pool.query(sql, params);
+    return rows as T[];
+  },
 
-export function initDatabase() {
+  async get<T = any>(sql: string, params: any[] = []): Promise<T | undefined> {
+    const [rows] = await pool.query(sql, params);
+    const arr = rows as T[];
+    return arr.length > 0 ? arr[0] : undefined;
+  },
+
+  async all<T = any>(sql: string, params: any[] = []): Promise<T[]> {
+    const [rows] = await pool.query(sql, params);
+    return rows as T[];
+  },
+
+  async run(sql: string, params: any[] = []): Promise<{ affectedRows: number; insertId: number }> {
+    const [result] = await pool.query(sql, params) as any;
+    return {
+      affectedRows: result.affectedRows,
+      insertId: result.insertId,
+    };
+  },
+
+  async execute(sql: string, params: any[] = []): Promise<any> {
+    const [result] = await pool.execute(sql, params);
+    return result;
+  }
+};
+
+export async function initDatabase() {
+  const activePool = await getPool();
+  console.log(`[DATABASE] Đang kết nối MySQL: ${dbUser}@${rawHost}:${dbPort}/${dbName}`);
+
   // 1. Events table
-  db.exec(`
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS events (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      calendar_type TEXT NOT NULL DEFAULT 'solar',
-      day INTEGER NOT NULL,
-      month INTEGER NOT NULL,
-      category TEXT NOT NULL,
-      status TEXT DEFAULT 'active',
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
+      calendar_type VARCHAR(20) NOT NULL DEFAULT 'solar',
+      day INT NOT NULL,
+      month INT NOT NULL,
+      category VARCHAR(100) NOT NULL,
+      status VARCHAR(20) DEFAULT 'active',
       summary TEXT,
       meaning TEXT,
       traditions TEXT,
       image_url TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `);
 
   // 2. Daily quotes table
-  db.exec(`
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS daily_quotes (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id INT AUTO_INCREMENT PRIMARY KEY,
       quote TEXT NOT NULL,
-      author TEXT,
-      applicable_day INTEGER,
-      applicable_month INTEGER,
-      theme TEXT DEFAULT 'general'
-    );
+      author VARCHAR(255),
+      applicable_day INT,
+      applicable_month INT,
+      theme VARCHAR(50) DEFAULT 'general'
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `);
 
   // 3. App config table
-  db.exec(`
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS app_config (
-      key TEXT PRIMARY KEY,
-      value TEXT NOT NULL,
-      description TEXT
-    );
+      \`key\` VARCHAR(100) PRIMARY KEY,
+      \`value\` TEXT NOT NULL,
+      description VARCHAR(255)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `);
 
   // 4. Analytics stats table
-  db.exec(`
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS analytics_stats (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      date TEXT NOT NULL,
-      active_users INTEGER DEFAULT 0,
-      reminders_created INTEGER DEFAULT 0,
-      page_views INTEGER DEFAULT 0
-    );
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      date VARCHAR(20) NOT NULL,
+      active_users INT DEFAULT 0,
+      reminders_created INT DEFAULT 0,
+      page_views INT DEFAULT 0
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `);
 
-  // Check if events need seeding
-  const countStmt = db.prepare('SELECT COUNT(*) as count FROM events');
-  const result = countStmt.get() as { count: number };
+  // 5. Users table
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id VARCHAR(100) PRIMARY KEY,
+      email VARCHAR(255) UNIQUE,
+      name VARCHAR(255),
+      avatar TEXT,
+      is_guest TINYINT DEFAULT 1,
+      auth_provider VARCHAR(50) DEFAULT 'guest',
+      role VARCHAR(50) DEFAULT 'user',
+      status VARCHAR(50) DEFAULT 'active',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      last_active_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      last_login_at TIMESTAMP NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `);
 
-  if (result.count === 0) {
-    console.log('Seeding initial events matching wireframe...');
-    const insertEvent = db.prepare(`
-      INSERT INTO events (title, calendar_type, day, month, category, status, summary, meaning, traditions, image_url)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  // 6. User reminders table
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS user_reminders (
+      id VARCHAR(100) PRIMARY KEY,
+      user_id VARCHAR(100) NOT NULL,
+      title VARCHAR(255) NOT NULL,
+      calendar_type VARCHAR(20) NOT NULL DEFAULT 'both',
+      solar_date VARCHAR(20) NOT NULL,
+      lunar_day INT NOT NULL,
+      lunar_month INT NOT NULL,
+      lunar_year INT NULL,
+      lunar_formatted VARCHAR(100) NULL,
+      is_leap_month TINYINT DEFAULT 0,
+      time VARCHAR(20) DEFAULT 'all_day',
+      repeat_type VARCHAR(50) DEFAULT 'yearly',
+      remind_before_days INT DEFAULT 1,
+      icon VARCHAR(50) DEFAULT 'cake',
+      notes TEXT,
+      is_completed TINYINT DEFAULT 0,
+      sync_status TINYINT DEFAULT 1,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_user_reminders_user (user_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `);
+
+  // 7. Email OTP table
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS email_otps (
+      email VARCHAR(255) PRIMARY KEY,
+      otp_code VARCHAR(10) NOT NULL,
+      expires_at TIMESTAMP NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `);
+
+  // 8. Donation config table
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS donation_config (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      bank_bin VARCHAR(20) NOT NULL DEFAULT '970422',
+      bank_name VARCHAR(255) NOT NULL DEFAULT 'MB Bank (Ngân hàng Quân Đội)',
+      account_number VARCHAR(50) NOT NULL DEFAULT '0988668899',
+      account_holder VARCHAR(255) NOT NULL DEFAULT 'NGUYEN TRUNG',
+      qr_template VARCHAR(50) NOT NULL DEFAULT 'compact2',
+      custom_qr_url TEXT,
+      suggested_amounts TEXT NOT NULL,
+      momo_phone VARCHAR(50) DEFAULT '0988668899',
+      momo_name VARCHAR(255) DEFAULT 'NGUYEN TRUNG',
+      transfer_syntax VARCHAR(50) NOT NULL DEFAULT 'LICHVIET',
+      thank_you_message TEXT NOT NULL,
+      is_active TINYINT NOT NULL DEFAULT 1,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `);
+
+  // 9. Transactions table
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS transactions (
+      id VARCHAR(100) PRIMARY KEY,
+      user_id VARCHAR(100) NULL,
+      amount INT NOT NULL,
+      currency VARCHAR(10) DEFAULT 'VND',
+      payment_method VARCHAR(50) NOT NULL DEFAULT 'vietqr',
+      transaction_code VARCHAR(100) UNIQUE NOT NULL,
+      sender_name VARCHAR(255),
+      sender_email VARCHAR(255),
+      message TEXT,
+      status VARCHAR(50) DEFAULT 'pending',
+      is_anonymous TINYINT DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      completed_at TIMESTAMP NULL,
+      INDEX idx_transactions_status (status),
+      INDEX idx_transactions_created (created_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `);
+
+  // Seed default donation config if empty
+  const [donationRows] = await pool.query('SELECT COUNT(*) as count FROM donation_config') as any;
+  if (donationRows[0].count === 0) {
+    await pool.query(`
+      INSERT INTO donation_config (
+        bank_bin, bank_name, account_number, account_holder,
+        qr_template, suggested_amounts, momo_phone, momo_name,
+        transfer_syntax, thank_you_message, is_active
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      '970422',
+      'MB Bank (Ngân hàng Quân Đội)',
+      '0988668899',
+      'NGUYEN TRUNG',
+      'compact2',
+      JSON.stringify([10000, 30000, 50000, 100000, 200000]),
+      '0988668899',
+      'NGUYEN TRUNG',
+      'LICHVIET',
+      'Lịch An Nhiên xin chân thành cảm ơn tấm lòng hảo tâm và sự đồng hành của bạn! Chúc bạn và gia quyến luôn vạn sự cát tường, an khang thịnh vượng!',
+      1
+    ]);
+  }
+
+  // Seed sample transactions if empty
+  const [txnRows] = await pool.query('SELECT COUNT(*) as count FROM transactions') as any;
+  if (txnRows[0].count === 0) {
+    await pool.query(`
+      INSERT INTO transactions (
+        id, user_id, amount, currency, payment_method, transaction_code,
+        sender_name, sender_email, message, status, is_anonymous, created_at, completed_at
+      ) VALUES
+      (
+        'txn_seed_1', null, 50000, 'VND', 'vietqr', 'ANNHIEN_8921',
+        'Cô Thanh Hương (Hà Nội)', 'thanhhuong@gmail.com',
+        'Cảm ơn ứng dụng rất nhiều! Chữ to rõ ràng, tôi và ông nhà xem hàng ngày rất thích.',
+        'completed', 0, '2026-09-17 08:30:00', '2026-09-17 08:32:00'
+      ),
+      (
+        'txn_seed_2', null, 100000, 'VND', 'vietqr', 'ANNHIEN_9402',
+        'Chú Minh Đức (TP.HCM)', 'minhduc@gmail.com',
+        'Ủng hộ các bạn trẻ duy trì ứng dụng thuần Việt, không quảng cáo làm phiền.',
+        'completed', 0, '2026-09-18 14:15:00', '2026-09-18 14:17:00'
+      ),
+      (
+        'txn_seed_3', null, 30000, 'VND', 'momo', 'ANNHIEN_3195',
+        'Người dùng ẩn danh', null,
+        'Chúc ứng dụng Lịch An Nhiên ngày càng phát triển và giúp ích cho cộng đồng!',
+        'completed', 1, '2026-09-18 19:40:00', '2026-09-18 19:41:00'
+      )
     `);
+  }
 
-    // Matches Screen 11 wireframe table:
-    // 1/1: Tết Dương lịch (Lễ Việt Nam)
-    // 26/1: Tết Nguyên Đán (Lễ Việt Nam)
-    // 15/8: Tết Trung Thu (Âm lịch)
-    // 20/11: Ngày Nhà giáo VN (Lễ Việt Nam)
-    // 24/12: Giáng Sinh (Quốc tế)
-    // Plus other traditional Vietnamese holidays from Screen 9 & 10
+  // Seed events if empty
+  const [eventRows] = await pool.query('SELECT COUNT(*) as count FROM events') as any;
+  if (eventRows[0].count === 0) {
     const seedEvents = [
-      {
-        title: 'Tết Dương lịch',
-        calendar_type: 'solar',
-        day: 1,
-        month: 1,
-        category: 'Lễ Việt Nam',
-        status: 'active',
-        summary: 'Ngày đầu tiên của năm mới theo Dương lịch',
-        meaning: 'Khởi đầu một năm mới với nhiều hy vọng, may mắn và hạnh phúc.',
-        traditions: 'Đón giao thừa, sum họp bạn bè, chúc Tết đầu năm.',
-        image_url: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800'
-      },
-      {
-        title: 'Tết Nguyên Đán',
-        calendar_type: 'solar',
-        day: 26,
-        month: 1,
-        category: 'Lễ Việt Nam',
-        status: 'active',
-        summary: 'Tết cổ truyền lớn nhất của dân tộc Việt Nam (29 tháng Chạp)',
-        meaning: 'Dịp đoàn tụ gia đình thiêng liêng nhất, tạ ơn tổ tiên và đón chào năm mới an khang thịnh vượng.',
-        traditions: 'Gói bánh chưng, cúng tất niên, chúc Tết ông bà cha mẹ, mừng tuổi đầu xuân.',
-        image_url: 'https://images.unsplash.com/photo-1548625361-16eb1cb19999?w=800'
-      },
-      {
-        title: 'Rằm tháng Giêng',
-        calendar_type: 'lunar',
-        day: 15,
-        month: 1,
-        category: 'Âm lịch',
-        status: 'active',
-        summary: 'Tết Thượng Nguyên - Cúng cả năm không bằng Rằm tháng Giêng',
-        meaning: 'Cầu mong sự bình an, giải hạn và phúc lộc cho cả gia đình trong cả năm.',
-        traditions: 'Đi chùa cầu an, ăn chay, làm lễ cúng gia tiên thịnh soạn.',
-        image_url: 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=800'
-      },
-      {
-        title: 'Giỗ Tổ Hùng Vương',
-        calendar_type: 'lunar',
-        day: 10,
-        month: 3,
-        category: 'Lễ Việt Nam',
-        status: 'active',
-        summary: 'Dù ai đi ngược về xuôi, nhớ ngày Giỗ Tổ mùng mười tháng ba',
-        meaning: 'Tưởng nhớ công ơn dựng nước của các Vua Hùng, phát huy tinh thần yêu nước và uống nước nhớ nguồn.',
-        traditions: 'Lễ rước kiệu, dâng hương tại Đền Hùng Phú Thọ, các hoạt động văn hóa dân gian.',
-        image_url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800'
-      },
-      {
-        title: 'Ngày Giải phóng miền Nam',
-        calendar_type: 'solar',
-        day: 30,
-        month: 4,
-        category: 'Lễ Việt Nam',
-        status: 'active',
-        summary: 'Kỷ niệm ngày Thống nhất non sông đất nước (30/4/1975)',
-        meaning: 'Khẳng định độc lập chủ quyền, tri ân các anh hùng liệt sĩ đã hy sinh vì Tổ quốc.',
-        traditions: 'Mít tinh, văn nghệ kỷ niệm, thăm viếng nghĩa trang liệt sĩ.',
-        image_url: 'https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=800'
-      },
-      {
-        title: 'Quốc tế Lao động',
-        calendar_type: 'solar',
-        day: 1,
-        month: 5,
-        category: 'Quốc tế',
-        status: 'active',
-        summary: 'Ngày kỷ niệm phong trào công nhân và người lao động toàn cầu',
-        meaning: 'Tôn vinh giá trị của sức lao động chân chính và đoàn kết của giai cấp công nhân.',
-        traditions: 'Nghỉ ngơi, du lịch, họp mặt gia đình.',
-        image_url: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800'
-      },
-      {
-        title: 'Ngày Quốc tế Bảo vệ Tầng Ozone',
-        calendar_type: 'solar',
-        day: 16,
-        month: 9,
-        category: 'Quốc tế',
-        status: 'active',
-        summary: 'Nâng cao ý thức bảo vệ môi trường và bầu khí quyển của Trái Đất',
-        meaning: 'Nhắc nhở trách nhiệm bảo vệ hành tinh xanh cho các thế hệ tương lai.',
-        traditions: 'Tuyên truyền môi trường, giảm thiểu khí thải nhà kính.',
-        image_url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800'
-      },
-      {
-        title: 'Tết Trung Thu',
-        calendar_type: 'lunar',
-        day: 15,
-        month: 8,
-        category: 'Âm lịch',
-        status: 'active',
-        summary: 'Rằm tháng 8 - Tết của tình thân, sum vầy và đoàn viên gia đình',
-        meaning: 'Tết Trung Thu là dịp để gia đình sum vầy, trẻ em được vui chơi, rước đèn, phá cỗ. Đây cũng là dịp thể hiện tình thân và truyền thống văn hóa tốt đẹp của dân tộc.',
-        traditions: '• Rước đèn ông sao, múa lân sư rồng\n• Phá cỗ trông trăng, ăn bánh nướng, bánh dẻo\n• Tặng quà và chúc phúc cho người thân',
-        image_url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800'
-      },
-      {
-        title: 'Ngày Quốc khánh 2/9',
-        calendar_type: 'solar',
-        day: 2,
-        month: 9,
-        category: 'Lễ Việt Nam',
-        status: 'active',
-        summary: 'Chủ tịch Hồ Chí Minh đọc Tuyên ngôn Độc lập tại Quảng trường Ba Đình (1945)',
-        meaning: 'Khai sinh ra nước Việt Nam Dân chủ Cộng hòa, ngày hội non sông của toàn thể nhân dân.',
-        traditions: 'Treo cờ Tổ quốc, dâng hoa Lăng Bác, bắn pháo hoa.',
-        image_url: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=800'
-      },
-      {
-        title: 'Ngày Nhà giáo VN',
-        calendar_type: 'solar',
-        day: 20,
-        month: 11,
-        category: 'Lễ Việt Nam',
-        status: 'active',
-        summary: 'Tôn vinh nghề giáo cao quý và truyền thống Tôn sư trọng đạo',
-        meaning: 'Tri ân các thầy cô giáo đã tận tụy dạy dỗ, truyền đạt tri thức và đạo làm người.',
-        traditions: 'Tặng hoa thầy cô, họp lớp, lễ tri ân tại các trường học.',
-        image_url: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800'
-      },
-      {
-        title: 'Giáng Sinh',
-        calendar_type: 'solar',
-        day: 24,
-        month: 12,
-        category: 'Quốc tế',
-        status: 'active',
-        summary: 'Lễ hội mừng Chúa Giáng sinh và dịp an lành cuối năm',
-        meaning: 'Cầu chúc hòa bình, an lành, tình yêu thương và sẻ chia giữa mọi người.',
-        traditions: 'Trang trí cây thông noel, tặng quà, đi nhà thờ cầu nguyện.',
-        image_url: 'https://images.unsplash.com/photo-1512389142860-9c449e58a543?w=800'
-      }
+      ['Tết Dương lịch', 'solar', 1, 1, 'Lễ Việt Nam', 'active', 'Ngày đầu tiên của năm mới theo Dương lịch', 'Khởi đầu một năm mới với nhiều hy vọng, may mắn và hạnh phúc.', 'Đón giao thừa, sum họp bạn bè, chúc Tết đầu năm.', 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800'],
+      ['Tết Nguyên Đán', 'solar', 26, 1, 'Lễ Việt Nam', 'active', 'Tết cổ truyền lớn nhất của dân tộc Việt Nam (29 tháng Chạp)', 'Dịp đoàn tụ gia đình thiêng liêng nhất, tạ ơn tổ tiên và đón chào năm mới an khang thịnh vượng.', 'Gói bánh chưng, cúng tất niên, chúc Tết ông bà cha mẹ, mừng tuổi đầu xuân.', 'https://images.unsplash.com/photo-1548625361-16eb1cb19999?w=800'],
+      ['Rằm tháng Giêng', 'lunar', 15, 1, 'Âm lịch', 'active', 'Tết Thượng Nguyên - Cúng cả năm không bằng Rằm tháng Giêng', 'Cầu mong sự bình an, giải hạn và phúc lộc cho cả gia đình trong cả năm.', 'Đi chùa cầu an, ăn chay, làm lễ cúng gia tiên thịnh soạn.', 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=800'],
+      ['Giỗ Tổ Hùng Vương', 'lunar', 10, 3, 'Lễ Việt Nam', 'active', 'Dù ai đi ngược về xuôi, nhớ ngày Giỗ Tổ mùng mười tháng ba', 'Tưởng nhớ công ơn dựng nước của các Vua Hùng, phát huy tinh thần yêu nước và uống nước nhớ nguồn.', 'Lễ rước kiệu, dâng hương tại Đền Hùng Phú Thọ, các hoạt động văn hóa dân gian.', 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800'],
+      ['Ngày Giải phóng miền Nam', 'solar', 30, 4, 'Lễ Việt Nam', 'active', 'Kỷ niệm ngày Thống nhất non sông đất nước (30/4/1975)', 'Khẳng định độc lập chủ quyền, tri ân các anh hùng liệt sĩ đã hy sinh vì Tổ quốc.', 'Mít tinh, văn nghệ kỷ niệm, thăm viếng nghĩa trang liệt sĩ.', 'https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=800'],
+      ['Quốc tế Lao động', 'solar', 1, 5, 'Quốc tế', 'active', 'Ngày kỷ niệm phong trào công nhân và người lao động toàn cầu', 'Tôn vinh giá trị của sức lao động chân chính và đoàn kết của giai cấp công nhân.', 'Nghỉ ngơi, du lịch, họp mặt gia đình.', 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800'],
+      ['Ngày Quốc tế Bảo vệ Tầng Ozone', 'solar', 16, 9, 'Quốc tế', 'active', 'Nâng cao ý thức bảo vệ môi trường và bầu khí quyển của Trái Đất', 'Nhắc nhở trách nhiệm bảo vệ hành tinh xanh cho các thế hệ tương lai.', 'Tuyên truyền môi trường, giảm thiểu khí thải nhà kính.', 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800'],
+      ['Tết Trung Thu', 'lunar', 15, 8, 'Âm lịch', 'active', 'Rằm tháng 8 - Tết của tình thân, sum vầy và đoàn viên gia đình', 'Tết Trung Thu là dịp để gia đình sum vầy, trẻ em được vui chơi, rước đèn, phá cỗ. Đây cũng là dịp thể hiện tình thân và truyền thống văn hóa tốt đẹp của dân tộc.', '• Rước đèn ông sao, múa lân sư rồng\n• Phá cỗ trông trăng, ăn bánh nướng, bánh dẻo\n• Tặng quà và chúc phúc cho người thân', 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800'],
+      ['Ngày Quốc khánh 2/9', 'solar', 2, 9, 'Lễ Việt Nam', 'active', 'Chủ tịch Hồ Chí Minh đọc Tuyên ngôn Độc lập tại Quảng trường Ba Đình (1945)', 'Khai sinh ra nước Việt Nam Dân chủ Cộng hòa, ngày hội non sông của toàn thể nhân dân.', 'Treo cờ Tổ quốc, dâng hoa Lăng Bác, bắn pháo hoa.', 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=800'],
+      ['Ngày Nhà giáo VN', 'solar', 20, 11, 'Lễ Việt Nam', 'active', 'Tôn vinh nghề giáo cao quý và truyền thống Tôn sư trọng đạo', 'Tri ân các thầy cô giáo đã tận tụy dạy dỗ, truyền đạt tri thức và đạo làm người.', 'Tặng hoa thầy cô, họp lớp, lễ tri ân tại các trường học.', 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800'],
+      ['Giáng Sinh', 'solar', 24, 12, 'Quốc tế', 'active', 'Lễ hội mừng Chúa Giáng sinh và dịp an lành cuối năm', 'Cầu chúc hòa bình, an lành, tình yêu thương và sẻ chia giữa mọi người.', 'Trang trí cây thông noel, tặng quà, đi nhà thờ cầu nguyện.', 'https://images.unsplash.com/photo-1512389142860-9c449e58a543?w=800']
     ];
 
     for (const ev of seedEvents) {
-      insertEvent.run(
-        ev.title,
-        ev.calendar_type,
-        ev.day,
-        ev.month,
-        ev.category,
-        ev.status,
-        ev.summary,
-        ev.meaning,
-        ev.traditions,
-        ev.image_url
-      );
+      await pool.query(`
+        INSERT INTO events (title, calendar_type, day, month, category, status, summary, meaning, traditions, image_url)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, ev);
     }
   }
 
-  // Seed daily quotes if needed
-  const quoteCount = db.prepare('SELECT COUNT(*) as count FROM daily_quotes').get() as { count: number };
-  if (quoteCount.count === 0) {
-    const insertQuote = db.prepare('INSERT INTO daily_quotes (quote, author, applicable_day, applicable_month, theme) VALUES (?, ?, ?, ?, ?)');
-    insertQuote.run('Trung thu là tết của tình thân, là dịp để gia đình sum vầy.', 'Dân gian', 15, 8, 'mid_autumn');
-    insertQuote.run('An khang thịnh vượng, vạn sự như ý.', 'Lời chúc Tết', 1, 1, 'tet');
-    insertQuote.run('Mỗi ngày mới là một khởi đầu bình an và trọn vẹn.', 'Lịch An Nhiên', null, null, 'daily');
-    insertQuote.run('Gia đình là điểm tựa bình yên nhất của đời người.', 'Danh ngôn', null, null, 'family');
-    insertQuote.run('Uống nước nhớ nguồn, ăn quả nhớ kẻ trồng cây.', 'Tục ngữ Việt Nam', 10, 3, 'tradition');
+  // Seed quotes if empty
+  const [quoteRows] = await pool.query('SELECT COUNT(*) as count FROM daily_quotes') as any;
+  if (quoteRows[0].count === 0) {
+    await pool.query(`
+      INSERT INTO daily_quotes (quote, author, applicable_day, applicable_month, theme) VALUES
+      ('Trung thu là tết của tình thân, là dịp để gia đình sum vầy.', 'Dân gian', 15, 8, 'mid_autumn'),
+      ('An khang thịnh vượng, vạn sự như ý.', 'Lời chúc Tết', 1, 1, 'tet'),
+      ('Mỗi ngày mới là một khởi đầu bình an và trọn vẹn.', 'Lịch An Nhiên', null, null, 'daily'),
+      ('Gia đình là điểm tựa bình yên nhất của đời người.', 'Danh ngôn', null, null, 'family'),
+      ('Uống nước nhớ nguồn, ăn quả nhớ kẻ trồng cây.', 'Tục ngữ Việt Nam', 10, 3, 'tradition')
+    `);
   }
 
-  // Seed app config if needed
-  const configCount = db.prepare('SELECT COUNT(*) as count FROM app_config').get() as { count: number };
-  if (configCount.count === 0) {
-    const insertConfig = db.prepare('INSERT INTO app_config (key, value, description) VALUES (?, ?, ?)');
-    insertConfig.run('app_name', 'Lịch An Nhiên', 'Tên ứng dụng');
-    insertConfig.run('zodiac_year_2025', 'Ất Tỵ', 'Con giáp năm 2025');
-    insertConfig.run('zodiac_year_2026', 'Bính Ngọ', 'Con giáp năm 2026');
-    insertConfig.run('splash_greeting', 'An khang • Thịnh vượng • Vạn sự như ý', 'Lời chúc khởi đầu');
-    insertConfig.run('slogan', 'Giữ truyền thống, gần gũi mỗi ngày!', 'Khẩu hiệu sản phẩm');
+  // Seed app config if empty
+  const [configRows] = await pool.query('SELECT COUNT(*) as count FROM app_config') as any;
+  if (configRows[0].count === 0) {
+    await pool.query(`
+      INSERT INTO app_config (\`key\`, \`value\`, description) VALUES
+      ('app_name', 'Lịch An Nhiên', 'Tên ứng dụng'),
+      ('zodiac_year_2025', 'Ất Tỵ', 'Con giáp năm 2025'),
+      ('zodiac_year_2026', 'Bính Ngọ', 'Con giáp năm 2026'),
+      ('splash_greeting', 'An khang • Thịnh vượng • Vạn sự như ý', 'Lời chúc khởi đầu'),
+      ('slogan', 'Giữ truyền thống, gần gũi mỗi ngày!', 'Khẩu hiệu sản phẩm')
+    `);
   }
 
-  // Seed sample analytics if needed
-  const statsCount = db.prepare('SELECT COUNT(*) as count FROM analytics_stats').get() as { count: number };
-  if (statsCount.count === 0) {
-    const insertStat = db.prepare('INSERT INTO analytics_stats (date, active_users, reminders_created, page_views) VALUES (?, ?, ?, ?)');
-    insertStat.run('2026-09-16', 1420, 85, 4890);
-    insertStat.run('2026-09-17', 1530, 92, 5120);
-    insertStat.run('2026-09-18', 1680, 104, 5630);
+  // Seed stats if empty
+  const [statRows] = await pool.query('SELECT COUNT(*) as count FROM analytics_stats') as any;
+  if (statRows[0].count === 0) {
+    await pool.query(`
+      INSERT INTO analytics_stats (date, active_users, reminders_created, page_views) VALUES
+      ('2026-09-16', 1420, 85, 4890),
+      ('2026-09-17', 1530, 92, 5120),
+      ('2026-09-18', 1680, 104, 5630)
+    `);
   }
+
+  console.log('✅ [MYSQL] Khởi tạo cơ sở dữ liệu MySQL lich_an_nhien thành công!');
 }

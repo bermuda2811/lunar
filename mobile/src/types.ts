@@ -85,7 +85,7 @@ export interface ReminderItem {
 export interface AppSettings {
   notificationsEnabled: boolean;
   lunarDisplayMode: 'full' | 'basic' | 'date_only';
-  theme: 'light' | 'dark';
+  theme: 'warm' | 'white' | 'dark';
   fontSize: 'standard' | 'large' | 'extra_large';
   language: 'vi' | 'en';
 }

@@ -123,3 +123,37 @@ Theo thiết kế chuẩn tại `wireframe.png`, ứng dụng gồm 11 màn hìn
   - Quản lý câu chúc theo ngày, nội dung ý nghĩa văn hóa.
   - Thống kê lượt truy cập và nhắc nhở.
   - Cung cấp REST API cho mobile app cập nhật nội dung tức thì không cần phát hành lại ứng dụng.
+
+### 2.12. Quản lý Tài khoản, Đăng nhập Google & Resend Email OTP (Màn hình 12)
+- **Tài khoản khách tự động (Seamless Guest Account)**: Khi cài đặt/mở ứng dụng lần đầu, tự động tạo tài khoản ngầm, người dùng sử dụng ngay lập tức mà không gặp bất kỳ popup bắt buộc đăng nhập nào.
+- **Lưu trữ dữ liệu độc lập**: Các sự kiện, ngày giỗ, nhắc nhở cá nhân được lưu trữ riêng biệt theo từng tài khoản (`currentUser.id`).
+- **Đăng nhập Google 1 chạm (Google Sign-In OAuth 2.0)**: Nút bấm to nổi bật ở vị trí ưu tiên số 1, cho phép người dùng đăng nhập tức thì chỉ với một chạm, tự động liên kết tên và email Google mà không cần gõ bàn phím (tối ưu tuyệt đối cho người cao tuổi).
+- **Gửi mã OTP thật về Gmail qua Resend API**: Hỗ trợ gửi mã OTP 6 số xác thực thực tế vào hòm thư người dùng qua dịch vụ Resend chất lượng cao, kèm mẫu email thiệp đỏ phong cách truyền thống Lịch Việt.
+- **Tự động đồng bộ & gộp dữ liệu**: Cho phép người dùng lựa chọn tự động gộp (merge) toàn bộ nhắc nhở từ tài khoản khách vào tài khoản email/Google mới đăng nhập, bảo toàn dữ liệu.
+- **Icon Profile trên Header**: Thay đổi icon Cài đặt (bánh răng) trên thanh điều hướng chính thành icon Profile người dùng (`User`), dẫn vào màn hình Tài khoản & Cài đặt.
+
+### 2.13. Màn hình Ủng hộ nhà phát triển (Màn hình 13)
+- Thông điệp tri ân ấm áp: Giải thích lý do duy trì ứng dụng hoàn toàn miễn phí, không quảng cáo quấy rầy người cao tuổi.
+- 4 hạng mức ủng hộ thân mật: Tách trà ấm (10.000đ), Ly cà phê (30.000đ), Món quà nhỏ (50.000đ), Tấm lòng vàng (100.000đ).
+- Mã VietQR động (`img.vietqr.io`): Tự động điền số tiền và cú pháp chuyển khoản tương ứng khi quét qua các ứng dụng ngân hàng hoặc ví MoMo.
+- Thao tác sao chép 1 chạm: Sao chép nhanh số tài khoản và cú pháp chuyển khoản có phản hồi thị giác trực quan.
+
+### 2.14. Phiên bản Web Desktop Đa Cột & Tuyến Đường Mô Phỏng Mobile (/mobile-review)
+- **Web Desktop Toàn Diện (`localhost:3000/`)**:
+  - Giao diện thiết kế mở rộng dành cho máy tính cá nhân (PC/Laptop), vừa tối ưu cho màn hình lớn vừa co giãn mượt mà (responsive) trên trình duyệt điện thoại.
+  - Bố cục 3 cột phong phú:
+    1. *Tờ Lịch Xé Block Bàn*: Giữ nguyên vẻ đẹp tờ lịch treo tường truyền thống Việt Nam, số ngày to rõ (96px+), Âm lịch Bính Ngọ, Can Chi 4 trụ, Tiết khí, Đánh giá ngày và câu chúc an nhiên.
+    2. *Chi tiết Phong thủy & 12 Giờ Hoàng Đạo*: Đánh dấu giờ hoàng đạo/hắc đạo thời gian thực theo đồng hồ máy tính, hướng xuất hành cát lành (Hỷ Thần, Tài Thần), việc nên làm và việc kiêng cữ.
+    3. *Tiện ích đồng hành*: Lịch tháng mini bấm chọn ngày tức thì, danh sách ngày giỗ nhắc nhở cá nhân có checkbox hoàn thành, thẻ sự kiện lễ hội sắp tới.
+  - Các Tab chức năng tiện ích: Tờ Lịch Hôm Nay, Lịch Tháng Toàn Cảnh, Bách Khoa Lễ Tết, Quản Lý Nhắc Nhở Cá Nhân, và Trang Ủng Hộ VietQR.
+- **Tuyến Đường Mô Phỏng Mobile (`localhost:3000/mobile-review`)**:
+  - Giữ nguyên khung mô phỏng điện thoại di động (Phone Frame) cùng bộ chọn 13 màn hình chuẩn Wireframe để người dùng kiểm thử và theo dõi trải nghiệm di động.
+  - Nút chuyển đổi nhanh hai chiều giữa Web Desktop và Mobile Review không cần tải lại trang.
+
+### 2.15. Tinh Gọn Header & Phân Bố Tính Năng Theo Ngữ Cảnh Tự Nhiên
+- **Header 1 Hàng Ngang Duy Nhất (Single-Line 56px)**: Thanh thoát, tối ưu không gian hiển thị, không bị tràn dòng trên mọi độ phân giải.
+- **Widget Chuyển Ngày Tích Hợp (Unified Date Stepper)**: Bỏ nút "Hôm nay" riêng lẻ; nút nhảy về hôm nay được đưa trực tiếp vào trong widget chuyển ngày, tự động ẩn/hiện thông minh khi người dùng xem ngày khác.
+- **Tìm Kiếm Sự Kiện Tích Hợp Vào Tab Lễ Tết**: Chuyển ô tìm kiếm và bộ lọc danh mục trực tiếp vào đầu tab "Lễ Tết & Sự Kiện", xóa bỏ nút tìm kiếm rời rạc trên Header.
+- **Công Cụ Đổi Ngày Âm – Dương Trong Menu Tài Khoản**: Chuyển bộ chuyển đổi thiên văn Hồ Ngọc Đức vào modal/menu Tài khoản (`accountModalTab`), giữ thanh Navigation chính và Bottom Bar tinh gọn chuẩn 5 tabs.
+
+

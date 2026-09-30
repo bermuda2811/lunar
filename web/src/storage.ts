@@ -1,7 +1,9 @@
-import { ReminderItem, AppSettings } from './types';
+import { ReminderItem, AppSettings, UserAccount } from './types';
 
 const REMINDERS_KEY = 'lich_an_nhien_reminders_v1';
 const SETTINGS_KEY = 'lich_an_nhien_settings_v1';
+const USER_KEY = 'lich_an_nhien_user_v1';
+const USER_REMINDERS_PREFIX = 'lich_an_nhien_reminders_';
 
 // Seed reminders khớp 100% với Screen 5 wireframe
 export const INITIAL_REMINDERS: ReminderItem[] = [
@@ -19,7 +21,7 @@ export const INITIAL_REMINDERS: ReminderItem[] = [
     icon: 'cake',
     notes: 'Mua bánh kem trà xanh và hoa tặng Bà',
     isCompleted: false,
-    section: 'upcoming'
+    section: 'upcoming',
   },
   {
     id: 'rem-2',
@@ -35,7 +37,7 @@ export const INITIAL_REMINDERS: ReminderItem[] = [
     icon: 'altar',
     notes: 'Chuẩn bị mâm cúng giỗ truyền thống gia tiên',
     isCompleted: false,
-    section: 'upcoming'
+    section: 'upcoming',
   },
   {
     id: 'rem-3',
@@ -51,7 +53,7 @@ export const INITIAL_REMINDERS: ReminderItem[] = [
     icon: 'lotus',
     notes: 'Mua bánh nướng bánh dẻo và đèn ông sao cho các cháu',
     isCompleted: false,
-    section: 'upcoming'
+    section: 'upcoming',
   },
   {
     id: 'rem-4',
@@ -67,7 +69,7 @@ export const INITIAL_REMINDERS: ReminderItem[] = [
     icon: 'plane',
     notes: 'Chuyến du lịch nghỉ dưỡng gia đình 4 ngày 3 đêm',
     isCompleted: false,
-    section: 'upcoming'
+    section: 'upcoming',
   },
   {
     id: 'rem-5',
@@ -83,8 +85,8 @@ export const INITIAL_REMINDERS: ReminderItem[] = [
     icon: 'family',
     notes: 'Ăn tối liên hoan sum họp đại gia đình tại nhà chú Ba',
     isCompleted: false,
-    section: 'later'
-  }
+    section: 'later',
+  },
 ];
 
 export const INITIAL_SETTINGS: AppSettings = {
@@ -92,8 +94,59 @@ export const INITIAL_SETTINGS: AppSettings = {
   lunarDisplayMode: 'full',
   theme: 'light',
   fontSize: 'large', // Mặc định Lớn cho người cao tuổi theo wireframe Screen 7
-  language: 'vi'
+  language: 'vi',
 };
+
+export function getStoredUser(): UserAccount {
+  try {
+    const data = localStorage.getItem(USER_KEY);
+    if (!data) {
+      const guest: UserAccount = {
+        id: 'guest_' + Math.random().toString(36).substring(2, 8) + Date.now(),
+        isGuest: true,
+        createdAt: new Date().toISOString(),
+      };
+      localStorage.setItem(USER_KEY, JSON.stringify(guest));
+      return guest;
+    }
+    return JSON.parse(data);
+  } catch {
+    return {
+      id: 'guest_fallback',
+      isGuest: true,
+      createdAt: new Date().toISOString(),
+    };
+  }
+}
+
+export function saveStoredUser(user: UserAccount) {
+  try {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  } catch (e) {
+    console.error('Lỗi lưu tài khoản người dùng:', e);
+  }
+}
+
+export function getStoredUserReminders(userId: string): ReminderItem[] {
+  try {
+    const data = localStorage.getItem(USER_REMINDERS_PREFIX + userId);
+    if (!data) {
+      localStorage.setItem(USER_REMINDERS_PREFIX + userId, JSON.stringify(INITIAL_REMINDERS));
+      return INITIAL_REMINDERS;
+    }
+    return JSON.parse(data);
+  } catch {
+    return INITIAL_REMINDERS;
+  }
+}
+
+export function saveStoredUserReminders(userId: string, reminders: ReminderItem[]) {
+  try {
+    localStorage.setItem(USER_REMINDERS_PREFIX + userId, JSON.stringify(reminders));
+  } catch (e) {
+    console.error('Lỗi lưu nhắc nhở theo tài khoản:', e);
+  }
+}
 
 export function getStoredReminders(): ReminderItem[] {
   try {

@@ -127,6 +127,33 @@
 }
 ```
 
+### 2.4. Xác thực & Tài khoản người dùng
+- `POST /auth/guest`: Tạo tài khoản khách ẩn danh tự động khi mở app
+- `POST /auth/google`: Đăng nhập & đồng bộ tài khoản Google (OAuth 2.0)
+  - Body: `{ "token": "...", "credential": "...", "email": "user@gmail.com", "name": "Nguyen Van A", "guestId": "guest_123", "mergeGuestData": true }`
+  - Response: `{ "success": true, "data": { "id": "user_g_xxx", "email": "user@gmail.com", "name": "...", "isGuest": false } }`
+- `POST /auth/send-otp`: Gửi mã OTP 6 chữ số tới Email thật qua dịch vụ Resend API
+  - Body: `{ "email": "user@example.com" }`
+  - Response: `{ "success": true, "message": "...", "sentViaResend": true, "testOtpHint": "123456" }`
+- `POST /auth/verify-otp`: Xác thực mã OTP và hợp nhất dữ liệu từ tài khoản khách
+  - Body: `{ "email": "user@example.com", "otp": "123456", "guestId": "guest_123", "mergeGuestData": true }`
+  - Response: `{ "success": true, "data": { "id": "user_xxx", "email": "user@example.com", "isGuest": false } }`
+
+### 2.5. Đồng bộ Nhắc nhở theo Tài khoản
+- `GET /user/reminders?userId=xxx`: Lấy danh sách nhắc nhở của tài khoản tương ứng
+- `POST /user/reminders/sync`: Đồng bộ danh sách nhắc nhở từ thiết bị lên server
+  - Body: `{ "userId": "user_xxx", "reminders": [...] }`
+
+### 2.6. Thông tin Ủng hộ nhà phát triển & VietQR
+- `GET /donation` hoặc `GET /donation/config`: Lấy cấu hình tài khoản ngân hàng, mã BIN, số tài khoản, MoMo, cú pháp mẫu và link VietQR động mặc định.
+- `POST /donation/config`: (Admin) Cập nhật thông tin ngân hàng nhận tiền và mã QR.
+- `POST /donation/transactions`: Tạo giao dịch ủng hộ với mã thanh toán riêng biệt (`ANNHIEN_xxxxx`), tạo ảnh mã VietQR động NAPAS 247 đúng số tiền và cú pháp.
+  - Body: `{ "amount": 50000, "senderName": "Cô Lan", "senderEmail": "lan@gmail.com", "message": "Chúc ứng dụng phát triển", "isAnonymous": false }`
+  - Response: Trả về object transaction đầy đủ kèm `vietQrUrl` động.
+- `GET /donation/transactions`: Lấy danh sách các lượt ủng hộ.
+  - Query: `?publicOnly=true` (dành cho Bảng vàng tri ân người dùng), hoặc `?status=all` (dành cho quản trị Admin CMS).
+- `PATCH /donation/transactions/:id/confirm`: Xác nhận giao dịch thành công (chuyển `status = 'completed'`) và tự động gửi thư tri ân cảm ơn qua Resend Email (nếu người dùng có để lại email).
+
 ---
 
 ## 3. CÁC ENDPOINT QUẢN TRỊ ADMIN CMS (CRUD)
@@ -139,3 +166,5 @@
 - `POST /quotes`: Thêm câu chúc mới
 - `GET /config`: Lấy cấu hình hệ thống
 - `PUT /config`: Cập nhật cấu hình
+
+

@@ -1,19 +1,16 @@
-# tasks/current.md — Trạng thái Triển khai Dự án
+## Nhiệm vụ Hiện tại: Tối Ưu Tinh Gọn Giao Diện Web Theo Yêu Cầu Người Dùng
+- **Mục tiêu**:
+  1. **Bỏ nút "Hôm nay" rời rạc**: Tích hợp nút/chỉ báo "Hôm nay" trực tiếp vào bên trong Widget chuyển ngày (`[ < ] [ dd/mm/yyyy • Hôm nay ] [ > ]`). Chỉ hiển thị nút quay về "Hôm nay" khi đang xem ngày khác.
+  2. **Tích hợp tìm kiếm sự kiện vào mục "Lễ Tết"**: Bỏ nút kính lúp tìm kiếm rời rạc trên Header; đặt thanh tìm kiếm sự kiện + bộ lọc danh mục trực quan ngay đầu tab "Lễ Tết & Sự Kiện".
+  3. **Đưa chức năng đổi ngày vào Menu Tài Khoản**: Bỏ tab "Đổi Ngày" khỏi thanh Navigation chính và Mobile Bottom Bar (giữ 5 tabs vàng chuẩn mực); tích hợp trọn vẹn công cụ chuyển đổi Âm – Dương chuẩn thiên văn Hồ Ngọc Đức vào trong Modal/Menu Tài khoản người dùng với nút "Xem tờ lịch ngày này".
+  4. **Header 1 hàng ngang duy nhất (Single-Line 56px)**: Thanh thoát, chỉ gồm Logo/Năm bên trái, 5 Navigation Tabs ở giữa, Widget chuyển ngày tích hợp & Tài khoản bên phải.
 
-## Trạng thái Hiện tại: HOÀN THÀNH TOÀN BỘ CÁC PHASE (Phase 0 -> Phase 12)
-Ứng dụng Lịch An Nhiên (Lịch Việt) và Backend CMS đã được xây dựng hoàn tất, 100% khớp với thiết kế chuẩn tại `wireframe.png`.
-
-## Tiến độ chi tiết:
-- [x] **Phase 0: Project Bootstrap**: Thiết lập cấu trúc `AGENTS.md`, `docs/*`, `tasks/*`, Git repository.
-- [x] **Phase 1: Environment & Setup**: Khởi tạo Backend (Node.js/Express/TypeScript/SQLite), Web (React/TypeScript/Tailwind/Vite), Mobile (React Native Expo).
-- [x] **Phase 2: Design System**: Bộ màu di sản Việt Nam (Đỏ truyền thống, Xanh ngọc, Giấy ấm, Đen than), Typography tối ưu người cao tuổi.
-- [x] **Phase 3: Calendar Domain Core**: Thuật toán Âm Dương Lịch Hồ Ngọc Đức UTC+7, Can Chi, 24 Tiết khí, Giờ hoàng đạo, Ngày tốt xấu + Automated Tests.
-- [x] **Phase 4: Màn hình 1 (Loading / Splash)**: Con giáp Ất Tỵ, câu chúc Tết, hoạt họa tiến trình tải.
-- [x] **Phase 5: Màn hình 2 & 3 (Xem ngày Tổng quan & Chi tiết)**: 2 thẻ số lớn Dương/Âm, đánh giá ngày, sự kiện, danh ngôn, giờ hoàng đạo.
-- [x] **Phase 6: Màn hình 4 (Xem tháng)**: Lưới 7 cột, số dương to / số âm nhỏ, chấm màu ngày tốt/xấu/sự kiện, thẻ tóm tắt ngày chọn.
-- [x] **Phase 7: Reminder Domain**: Chuyển đổi nhắc nhở âm lịch sang dương lịch, chu kỳ lặp lại, offset báo trước.
-- [x] **Phase 8: Màn hình 5 & 6 (Nhắc nhở & Tạo nhắc nhở)**: Bộ lọc Sắp tới/Sau này, icon trực quan (bánh kem, bát hương, đèn lồng, máy bay, gia đình), form thêm nhắc nhở.
-- [x] **Phase 9: Màn hình 7, 8, 9, 10 (Cài đặt, Tìm kiếm, Sự kiện, Chi tiết sự kiện)**: Đầy đủ tính năng, giao diện văn hóa lễ hội Trung Thu.
-- [x] **Phase 10: Backend REST API**: Cung cấp các endpoint `/api/v1/calendar/day`, `/events`, `/quotes`, `/config`, `/stats`.
-- [x] **Phase 11: Backend Admin Web CMS**: Dashboard web quản trị tại `http://localhost:4000/admin` khớp 100% Màn hình 11 trong wireframe.
-- [x] **Phase 12: Kiểm thử & Hướng dẫn**: Toàn bộ bài test vượt qua, build thành công, hướng dẫn chi tiết kiểm thử Web, CMS và Android.
+- **Tiến độ triển khai**:
+  - [x] Cập nhật `CalendarWebApp.tsx`: kiểu `WebTab` còn 5 tabs (`today`, `month`, `events`, `reminders`, `donate`).
+  - [x] Thiết kế widget Date Stepper thống nhất trên Desktop Header & Mobile Stepper với nút "Hôm nay" tích hợp bên trong.
+  - [x] Tích hợp thanh tìm kiếm sự kiện và bộ lọc danh mục trực tiếp vào đầu tab "Lễ Tết", hỗ trợ tìm kiếm tức thời và thông báo trạng thái rỗng thân thiện.
+  - [x] Đưa công cụ đổi ngày Âm – Dương vào tab phụ trong Modal Tài khoản (`accountModalTab: 'account' | 'converter'`) cùng nút nhảy nhanh đến tờ lịch ngày được đổi.
+  - [x] Tinh giản Mobile Bottom Navigation Bar về 5 tabs chuẩn mực với touch target >= 48px.
+  - [x] Kiểm thử build Web: `npm run build:web` thành công (0 lỗi, 233ms).
+  - [x] Kiểm thử test suite Âm Dương: `npm test` vượt qua 100%.
+  - [x] Cập nhật tài liệu kỹ thuật dự án (`docs/UI_UX.md`, `docs/CHANGELOG.md`, `tasks/current.md`).

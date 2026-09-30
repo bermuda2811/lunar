@@ -6,6 +6,7 @@
     "dev:backend": "npm --prefix backend run dev",
     "dev:web": "npm --prefix web run dev",
     "dev:mobile": "npm --prefix mobile run start",
+    "dev:mobile:tunnel": "npm --prefix mobile run start:tunnel",
     "dev:android": "npm --prefix mobile run android",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:web\"",
     "build:backend": "npm --prefix backend run build",

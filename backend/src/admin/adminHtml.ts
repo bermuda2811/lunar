@@ -563,6 +563,10 @@ export function getAdminHtml(): string {
         <i class="fa-solid fa-chart-pie"></i>
         <span>Thống kê</span>
       </li>
+      <li class="nav-item" onclick="switchTab('donations')">
+        <i class="fa-solid fa-hand-holding-heart"></i>
+        <span>Ủng hộ & VietQR</span>
+      </li>
       <li class="nav-item" onclick="switchTab('settings')">
         <i class="fa-solid fa-gear"></i>
         <span>Cài đặt</span>
@@ -660,6 +664,79 @@ export function getAdminHtml(): string {
               <!-- Rendered via JS -->
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- DONATIONS & VIETQR SECTION -->
+      <div class="card" id="donations-section" style="display: none; margin-bottom: 24px;">
+        <div class="card-header">
+          <div class="card-title">Cấu hình VietQR & Quản lý ủng hộ</div>
+          <button class="btn-primary" onclick="saveDonationConfig()">
+            <i class="fa-solid fa-floppy-disk"></i> Lưu cấu hình QR
+          </button>
+        </div>
+
+        <div style="padding: 20px;">
+          <!-- Config Grid -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; background: #FAFBFD; border: 1px solid #E2E8F0; padding: 18px; border-radius: 12px;">
+            <div class="form-group">
+              <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Ngân hàng</label>
+              <input type="text" id="cfg-bank-name" class="form-control" value="MB Bank (Ngân hàng Quân Đội)">
+            </div>
+            <div class="form-group">
+              <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Số tài khoản</label>
+              <input type="text" id="cfg-account-number" class="form-control" value="0988668899">
+            </div>
+            <div class="form-group">
+              <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Chủ tài khoản (In hoa không dấu)</label>
+              <input type="text" id="cfg-account-holder" class="form-control" value="NGUYEN TRUNG">
+            </div>
+            <div class="form-group">
+              <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Mã BIN ngân hàng</label>
+              <input type="text" id="cfg-bank-bin" class="form-control" value="970422">
+            </div>
+            <div class="form-group">
+              <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Ví MoMo (Số điện thoại)</label>
+              <input type="text" id="cfg-momo-phone" class="form-control" value="0988668899">
+            </div>
+            <div class="form-group">
+              <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Cú pháp chuyển khoản mặc định</label>
+              <input type="text" id="cfg-transfer-syntax" class="form-control" value="LICHVIET">
+            </div>
+          </div>
+
+          <!-- Transactions Table -->
+          <div style="margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 16px; font-weight: 700; color: #1E293B;">
+                <i class="fa-solid fa-list-check" style="color: #B3261E; margin-right: 6px;"></i>
+                Danh sách giao dịch ủng hộ (Transactions)
+              </h3>
+              <button class="btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="loadDonationsData()">
+                <i class="fa-solid fa-rotate"></i> Làm mới
+              </button>
+            </div>
+
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Mã giao dịch</th>
+                    <th>Người ủng hộ</th>
+                    <th>Số tiền</th>
+                    <th>Phương thức</th>
+                    <th>Lời nhắn</th>
+                    <th>Thời gian</th>
+                    <th>Trạng thái</th>
+                    <th style="text-align: right;">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="donations-table-body">
+                  <!-- Rendered via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -904,10 +981,22 @@ export function getAdminHtml(): string {
     function switchTab(tab) {
       document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
       event.currentTarget.classList.add('active');
+      const eventsSection = document.getElementById('events-section');
+      const donationsSection = document.getElementById('donations-section');
+
       if (tab === 'events') {
         document.getElementById('page-title').innerText = 'Quản lý sự kiện';
+        if (eventsSection) eventsSection.style.display = 'block';
+        if (donationsSection) donationsSection.style.display = 'none';
+      } else if (tab === 'donations') {
+        document.getElementById('page-title').innerText = 'Quản lý Ủng hộ & Cấu hình VietQR';
+        if (eventsSection) eventsSection.style.display = 'none';
+        if (donationsSection) donationsSection.style.display = 'block';
+        loadDonationsData();
       } else if (tab === 'overview') {
         document.getElementById('page-title').innerText = 'Tổng quan hệ thống';
+        if (eventsSection) eventsSection.style.display = 'block';
+        if (donationsSection) donationsSection.style.display = 'none';
       } else if (tab === 'quotes') {
         document.getElementById('page-title').innerText = 'Quản lý nội dung & Câu chúc';
       } else if (tab === 'users') {
@@ -916,6 +1005,108 @@ export function getAdminHtml(): string {
         document.getElementById('page-title').innerText = 'Thống kê & Báo cáo';
       } else if (tab === 'settings') {
         document.getElementById('page-title').innerText = 'Cài đặt hệ thống';
+      }
+    }
+
+    async function loadDonationsData() {
+      try {
+        const [cfgRes, txnsRes] = await Promise.all([
+          fetch('/api/v1/donation/config'),
+          fetch('/api/v1/donation/transactions?limit=50')
+        ]);
+        const cfgData = await cfgRes.json();
+        const txnsData = await txnsRes.json();
+
+        if (cfgData.success && cfgData.data) {
+          const c = cfgData.data;
+          document.getElementById('cfg-bank-name').value = c.bankName || '';
+          document.getElementById('cfg-account-number').value = c.accountNumber || '';
+          document.getElementById('cfg-account-holder').value = c.accountHolder || '';
+          document.getElementById('cfg-bank-bin').value = c.bankBin || '';
+          document.getElementById('cfg-momo-phone').value = c.momoPhone || '';
+          document.getElementById('cfg-transfer-syntax').value = c.transferSyntax || '';
+        }
+
+        const tbody = document.getElementById('donations-table-body');
+        tbody.innerHTML = '';
+        if (txnsData.success && Array.isArray(txnsData.data)) {
+          if (txnsData.data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px; color: #94A3B8;">Chưa có giao dịch nào</td></tr>';
+            return;
+          }
+          txnsData.data.forEach(txn => {
+            const tr = document.createElement('tr');
+            const isCompleted = txn.status === 'completed';
+            tr.innerHTML = \`
+              <td><span class="date-badge" style="font-family:monospace; font-weight:700;">\${txn.transaction_code}</span></td>
+              <td>
+                <strong>\${txn.sender_name || 'Khách'}</strong>
+                \${txn.sender_email ? \`<div style="font-size:11px; color:#64748B;">\${txn.sender_email}</div>\` : ''}
+              </td>
+              <td><strong style="color:#B3261E;">\${parseInt(txn.amount, 10).toLocaleString('vi-VN')} đ</strong></td>
+              <td><span class="category-badge">\${txn.payment_method}</span></td>
+              <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="\${txn.message || ''}">
+                \${txn.message || '<span style="color:#94A3B8;">-</span>'}
+              </td>
+              <td style="font-size:12px; color:#64748B;">\${txn.created_at}</td>
+              <td>
+                <span class="status-badge \${isCompleted ? 'active' : 'hidden'}">
+                  <i class="fa-solid fa-circle" style="font-size: 8px;"></i>
+                  \${isCompleted ? 'Đã nhận' : 'Chờ xác nhận'}
+                </span>
+              </td>
+              <td style="text-align: right;">
+                \${!isCompleted ? \`
+                  <button class="btn-primary" style="padding: 4px 8px; font-size: 11px;" onclick="confirmDonation('\${txn.id}')">
+                    <i class="fa-solid fa-check"></i> Duyệt
+                  </button>
+                \` : '<span style="color:#10B981; font-weight:700; font-size:12px;"><i class="fa-solid fa-check-double"></i> Xong</span>'}
+              </td>
+            \`;
+            tbody.appendChild(tr);
+          });
+        }
+      } catch (err) {
+        console.error('Lỗi khi tải dữ liệu ủng hộ:', err);
+      }
+    }
+
+    async function saveDonationConfig() {
+      try {
+        const body = {
+          bankName: document.getElementById('cfg-bank-name').value,
+          accountNumber: document.getElementById('cfg-account-number').value,
+          accountHolder: document.getElementById('cfg-account-holder').value,
+          bankBin: document.getElementById('cfg-bank-bin').value,
+          momoPhone: document.getElementById('cfg-momo-phone').value,
+          transferSyntax: document.getElementById('cfg-transfer-syntax').value,
+        };
+        const res = await fetch('/api/v1/donation/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('Lưu cấu hình VietQR thành công!');
+        }
+      } catch (err) {
+        alert('Lỗi: ' + err.message);
+      }
+    }
+
+    async function confirmDonation(id) {
+      if (!confirm('Xác nhận đã nhận được tiền từ giao dịch này?')) return;
+      try {
+        const res = await fetch(\`/api/v1/donation/transactions/\${id}/confirm\`, {
+          method: 'PATCH'
+        });
+        const data = await res.json();
+        if (data.success) {
+          loadDonationsData();
+        }
+      } catch (err) {
+        alert('Lỗi: ' + err.message);
       }
     }
 

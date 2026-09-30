@@ -7,3 +7,9 @@ build/
 .DS_Store
 backend/data/*.db-shm
 backend/data/*.db-wal
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example

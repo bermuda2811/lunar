@@ -1,5 +1,4 @@
-import React from 'react';
-import { ChevronLeft, ChevronRight, Star, Quote, Search, Settings } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Star, Quote, Search, User } from 'lucide-react';
 import { StatusBar } from '../components/StatusBar';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { ScreenType } from '../types';
@@ -72,9 +71,9 @@ export const DailyOverviewScreen: React.FC<DailyOverviewScreenProps> = ({
           <button
             onClick={() => onNavigate('settings')}
             className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 active:scale-95 transition-all text-slate-600"
-            title="Cài đặt"
+            title="Tài khoản & Cài đặt"
           >
-            <Settings className="w-4.5 h-4.5" />
+            <User className="w-5 h-5" />
           </button>
         </div>
       </div>
