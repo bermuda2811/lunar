@@ -14,3 +14,4 @@
   - [x] Kiểm thử build Web: `npm run build:web` thành công (0 lỗi, 233ms).
   - [x] Kiểm thử test suite Âm Dương: `npm test` vượt qua 100%.
   - [x] Cập nhật tài liệu kỹ thuật dự án (`docs/UI_UX.md`, `docs/CHANGELOG.md`, `tasks/current.md`).
+  - [x] Khắc phục triệt để lỗi ngày cố định 16/09/2026 khi deploy lên VPS: chuyển `currentDate` sang `new Date()`, form nhắc nhở sang ngày thực tế và các màn hình sang tính toán sự kiện tự động.

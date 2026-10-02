@@ -377,6 +377,8 @@ export const CalendarWebApp: React.FC<CalendarWebAppProps> = ({
         (viewMonth === 1 && d === 1) ||
         (viewMonth === 4 && d === 30) ||
         (viewMonth === 5 && d === 1) ||
+        (lunar.month === 1 && (lunar.day === 1 || lunar.day === 2 || lunar.day === 3)) ||
+        (lunar.month === 3 && lunar.day === 10) ||
         (lunar.month === 8 && lunar.day === 15);
 
       items.push({

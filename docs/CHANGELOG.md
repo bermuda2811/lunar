@@ -2,6 +2,13 @@
 
 Mọi thay đổi đáng kể của dự án được ghi nhận tại file này theo định dạng Keep a Changelog.
 
+## [0.2.8] - 2026-10-02
+### Fixed
+- **Khắc Phục Khởi Tạo Ngày Cố Định (Hardcoded Date) Khi Deploy Lên VPS**:
+  - Chuyển đổi trạng thái khởi tạo `currentDate` tại [`web/src/App.tsx`](file:///home/trungnt/projects/calendar/web/src/App.tsx) từ ngày demo cố định `new Date(2026, 8, 16)` sang ngày thực tế của thiết bị `() => new Date()`.
+  - Cập nhật form tạo nhắc nhở [`AddReminderScreen.tsx`](file:///home/trungnt/projects/calendar/web/src/screens/AddReminderScreen.tsx) tự động điền ngày hiện tại (`YYYY-MM-DD`) thay vì ngày mẫu `2026-09-25`.
+  - Chuyển đổi toàn bộ danh sách sự kiện trong ngày tại [`DailyOverviewScreen.tsx`](file:///home/trungnt/projects/calendar/web/src/screens/DailyOverviewScreen.tsx), [`DailyDetailScreen.tsx`](file:///home/trungnt/projects/calendar/web/src/screens/DailyDetailScreen.tsx) và bộ lọc sự kiện tại [`MonthlyCalendarScreen.tsx`](file:///home/trungnt/projects/calendar/web/src/screens/MonthlyCalendarScreen.tsx), [`CalendarWebApp.tsx`](file:///home/trungnt/projects/calendar/web/src/views/CalendarWebApp.tsx) sang tính toán động theo chuẩn Lịch Âm - Dương thay vì so sánh cứng với tháng 9/2026.
+
 ## [0.2.7] - 2026-09-19
 ### Changed
 - **Tối Ưu Phân Bố Tính Năng & Tinh Gọn Giao Diện Web Theo Yêu Cầu**:

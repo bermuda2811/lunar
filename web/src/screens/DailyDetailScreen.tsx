@@ -20,6 +20,41 @@ export const DailyDetailScreen: React.FC<DailyDetailScreenProps> = ({
 
   const dayData = getFullDayData(day, month, year);
 
+  const getDayEvents = () => {
+    const events: string[] = [];
+    if (day === 1 && month === 1) events.push('Tết Dương Lịch');
+    if (day === 14 && month === 2) events.push('Lễ tình nhân (Valentine)');
+    if (day === 8 && month === 3) events.push('Quốc tế Phụ nữ (8/3)');
+    if (day === 30 && month === 4) events.push('Ngày Giải phóng Miền Nam (30/4)');
+    if (day === 1 && month === 5) events.push('Ngày Quốc tế Lao động (1/5)');
+    if (day === 19 && month === 5) events.push('Ngày sinh Chủ tịch Hồ Chí Minh (19/5)');
+    if (day === 1 && month === 6) events.push('Quốc tế Thiếu nhi (1/6)');
+    if (day === 2 && month === 9) events.push('Ngày Quốc khánh Việt Nam (2/9)');
+    if (day === 16 && month === 9) events.push('Ngày Quốc tế Bảo vệ Tầng Ozone');
+    if (day === 20 && month === 10) events.push('Ngày Phụ nữ Việt Nam (20/10)');
+    if (day === 20 && month === 11) events.push('Ngày Nhà giáo Việt Nam (20/11)');
+    if (day === 22 && month === 12) events.push('Ngày Thành lập QĐND Việt Nam (22/12)');
+    if (day === 25 && month === 12) events.push('Lễ Giáng sinh (Noel)');
+
+    if (dayData.lunar.month === 1 && dayData.lunar.day === 1) events.push('Mùng 1 Tết Nguyên Đán');
+    else if (dayData.lunar.month === 1 && dayData.lunar.day === 2) events.push('Mùng 2 Tết Nguyên Đán');
+    else if (dayData.lunar.month === 1 && dayData.lunar.day === 3) events.push('Mùng 3 Tết Nguyên Đán');
+    else if (dayData.lunar.month === 1 && dayData.lunar.day === 15) events.push('Rằm Tháng Giêng (Tết Thượng Nguyên)');
+    else if (dayData.lunar.month === 3 && dayData.lunar.day === 10) events.push('Giỗ Tổ Hùng Vương (10/3 Âm lịch)');
+    else if (dayData.lunar.month === 4 && dayData.lunar.day === 15) events.push('Đại lễ Phật Đản');
+    else if (dayData.lunar.month === 5 && dayData.lunar.day === 5) events.push('Tết Đoan Ngọ (5/5 Âm lịch)');
+    else if (dayData.lunar.month === 7 && dayData.lunar.day === 15) events.push('Lễ Vu Lan Báo Hiếu (Rằm tháng 7)');
+    else if (dayData.lunar.month === 8 && dayData.lunar.day === 15) events.push('Tết Trung Thu (Rằm tháng 8)');
+    else if (dayData.lunar.month === 12 && dayData.lunar.day === 23) events.push('Cúng Ông Táo chầu trời');
+    else if (dayData.lunar.day === 15) events.push(`Ngày Rằm (${dayData.lunar.day}/${dayData.lunar.month} Âm lịch)`);
+    else if (dayData.lunar.day === 1) events.push(`Mùng một đầu tháng (${dayData.lunar.day}/${dayData.lunar.month} Âm lịch)`);
+
+    if (events.length === 0) {
+      events.push('Ngày bình an, vạn sự thuận lợi');
+    }
+    return events;
+  };
+
   return (
     <div className="w-full h-full flex flex-col bg-[#FDFBF7] select-none">
       <StatusBar />
@@ -189,8 +224,9 @@ export const DailyDetailScreen: React.FC<DailyDetailScreenProps> = ({
           <div className="flex-1 text-xs">
             <span className="text-slate-500 font-medium block mb-0.5">Sự kiện / Ngày lễ</span>
             <div className="text-slate-800 font-medium space-y-0.5">
-              <div>• Ngày Quốc tế Bảo vệ Tầng Ozone</div>
-              <div>• Rằm tháng 8 (Tết Trung Thu)</div>
+              {getDayEvents().map((ev, i) => (
+                <div key={i}>• {ev}</div>
+              ))}
             </div>
           </div>
         </div>

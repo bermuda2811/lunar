@@ -31,8 +31,8 @@ export const App: React.FC = () => {
   };
 
   const [viewMode, setViewMode] = useState<'app' | 'review'>(getInitialViewMode);
-  // Default to 16/9/2026 to match showcase / wireframe demo
-  const [currentDate, setCurrentDate] = useState<Date>(new Date(2026, 8, 16));
+  // Khởi tạo thời gian thực tế của người dùng
+  const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
   const [currentUser, setCurrentUser] = useState<UserAccount>(() => getStoredUser());
   const [reminders, setReminders] = useState<ReminderItem[]>([]);
   const [settings, setSettings] = useState<AppSettings>(() => getStoredSettings());

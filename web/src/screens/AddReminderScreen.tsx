@@ -16,15 +16,22 @@ export const AddReminderScreen: React.FC<AddReminderScreenProps> = ({
 }) => {
   const [title, setTitle] = useState('');
   const [calendarType, setCalendarType] = useState<'solar' | 'lunar' | 'both'>('both');
-  const [dateStr, setDateStr] = useState('2026-09-25');
+  const [dateStr, setDateStr] = useState(() => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  });
   const [repeat, setRepeat] = useState<'none' | 'daily' | 'weekly' | 'monthly' | 'yearly'>('yearly');
   const [time, setTime] = useState('all_day');
   const [selectedIcon, setSelectedIcon] = useState<ReminderItem['icon']>('cake');
   const [notes, setNotes] = useState('');
 
   // Calculate lunar equivalent
+  const now = new Date();
   const [year, month, day] = dateStr.split('-').map(n => parseInt(n, 10));
-  const lunar = solarToLunar(day || 25, month || 9, year || 2026);
+  const lunar = solarToLunar(day || now.getDate(), month || (now.getMonth() + 1), year || now.getFullYear());
   const lunarDisplay = `${lunar.day}/${lunar.month} âm lịch`;
 
   const handleSave = (e: React.FormEvent) => {
