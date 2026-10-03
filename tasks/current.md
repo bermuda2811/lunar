@@ -15,7 +15,7 @@
   - [x] Merge và giải quyết toàn bộ xung đột mã nguồn giữa local và remote.
   - [x] Đồng bộ hệ thống Admin CMS Authentication và giao diện login quản trị viên.
   - [x] Tinh giản menu Admin CMS (loại bỏ các tab không có liên kết/chức năng).
-  - [ ] Chạy kiểm thử tự động `npm test` và TypeScript build `npm run build`.
-  - [ ] Rebuild và restart container Docker `luna_app` trên cổng 8087.
-  - [ ] Kiểm thử thực tế các endpoint `/admin`, `/api/v1/admin/login`, `/api/v1/health` và Web App `/`.
-  - [ ] Commit và push tất cả thay đổi lên Git repository.
+  - [x] Chạy kiểm thử tự động `npm test` và TypeScript build `npm run build` (100% pass).
+  - [x] Rebuild và restart container Docker `luna_app` trên cổng 8087 thành công.
+  - [x] Kiểm thử thực tế các endpoint `/admin`, `/api/v1/admin/login`, `/api/v1/health` và Web App `/`.
+  - [x] Commit và push tất cả thay đổi lên Git repository.
