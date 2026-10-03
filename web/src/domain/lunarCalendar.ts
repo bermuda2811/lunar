@@ -25,6 +25,7 @@ export interface CanChiInfo {
   dayCanIndex: number;
   yearCanIndex: number;
   yearChiIndex: number;
+  monthChiIndex?: number;
 }
 
 export interface TietKhiInfo {
@@ -186,18 +187,14 @@ export function solarToLunar(dd: number, mm: number, yy: number): LunarDate {
   if (monthStart > currentJd) {
     monthStart = getNewMoonDay(k, TIME_ZONE);
   }
-  let a11 = getLunarMonth11(yy - 1, TIME_ZONE);
+  let a11 = getLunarMonth11(yy, TIME_ZONE);
   let b11 = a11;
   let lunarYear = yy;
   if (a11 >= monthStart) {
-    lunarYear = yy - 1;
-    a11 = getLunarMonth11(yy - 2, TIME_ZONE);
+    lunarYear = yy;
+    a11 = getLunarMonth11(yy - 1, TIME_ZONE);
   } else {
-    b11 = getLunarMonth11(yy, TIME_ZONE);
-  }
-  if (monthStart >= b11) {
     lunarYear = yy + 1;
-    a11 = b11;
     b11 = getLunarMonth11(yy + 1, TIME_ZONE);
   }
 
@@ -231,13 +228,15 @@ export function solarToLunar(dd: number, mm: number, yy: number): LunarDate {
 
 export function lunarToSolar(lunarDay: number, lunarMonth: number, lunarYear: number, isLeapMonth = false): SolarDate {
   let a11: number;
+  let b11: number;
   if (lunarMonth < 11) {
     a11 = getLunarMonth11(lunarYear - 1, TIME_ZONE);
+    b11 = getLunarMonth11(lunarYear, TIME_ZONE);
   } else {
     a11 = getLunarMonth11(lunarYear, TIME_ZONE);
+    b11 = getLunarMonth11(lunarYear + 1, TIME_ZONE);
   }
-  const b11 = getLunarMonth11(lunarYear, TIME_ZONE);
-  let k = Math.floor((a11 - 2415021.076998695) / 29.530588853 + 0.5);
+  const k = Math.floor(0.5 + (a11 - 2415021.076998695) / 29.530588853);
   let off = lunarMonth - 11;
   if (off < 0) {
     off += 12;
@@ -245,12 +244,12 @@ export function lunarToSolar(lunarDay: number, lunarMonth: number, lunarYear: nu
   if (b11 - a11 > 365) {
     const leapOff = getLeapMonthOffset(a11, TIME_ZONE);
     let leapMonth = leapOff - 2;
-    if (leapMonth <= 0) {
+    if (leapMonth < 0) {
       leapMonth += 12;
     }
-    if (isLeapMonth && lunarMonth === leapMonth) {
-      off = leapOff;
-    } else if (off >= leapOff) {
+    if (isLeapMonth && lunarMonth !== leapMonth) {
+      return { day: 0, month: 0, year: 0 };
+    } else if (isLeapMonth || off >= leapOff) {
       off += 1;
     }
   }
@@ -279,7 +278,8 @@ export function getCanChi(dd: number, mm: number, yy: number, lunarYear: number,
     dayChiIndex,
     dayCanIndex,
     yearCanIndex,
-    yearChiIndex
+    yearChiIndex,
+    monthChiIndex
   };
 }
 
@@ -326,7 +326,8 @@ export function getTietKhi(dd: number, mm: number, yy: number): TietKhiInfo {
 export function getDayRating(dayChiIndex: number, monthChiIndex: number): DayRating {
   // Bảng 12 sao hoàng đạo theo Chi tháng (Thanh Long, Minh Đường, Thiên Hình, Chu Tước, Kim Quỹ, Kim Đường/Thiên Đức, Bạch Hổ, Ngọc Đường, Thiên Lao, Huyền Vũ, Tư Mệnh, Câu Trận)
   // Các sao Hoàng Đạo (Tốt): 0 (Thanh Long), 1 (Minh Đường), 4 (Kim Quỹ), 5 (Thiên Đức/Bảo Quang), 7 (Ngọc Đường), 10 (Tư Mệnh)
-  const offset = (monthChiIndex % 6) * 2;
+  // Tháng Giêng là Dần (index 2) khởi Thanh Long tại Tý (0), Mão (3) tại Dần (2), Thìn (4) tại Thìn (4)...
+  const offset = ((monthChiIndex - 2 + 12) % 6) * 2;
   const starIndex = (dayChiIndex - offset + 12) % 12;
   const isHoangDao = [0, 1, 4, 5, 7, 10].includes(starIndex);
 

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -320,6 +320,12 @@ export const CalendarWebApp: React.FC<CalendarWebAppProps> = ({
   const [viewMonth, setViewMonth] = useState<number>(month);
   const [viewYear, setViewYear] = useState<number>(year);
 
+  // Sync viewMonth and viewYear whenever month or year changes
+  useEffect(() => {
+    setViewMonth(month);
+    setViewYear(year);
+  }, [month, year]);
+
   const calendarGrid = useMemo(() => {
     const firstDay = new Date(viewYear, viewMonth - 1, 1);
     const totalDays = new Date(viewYear, viewMonth, 0).getDate();
@@ -435,7 +441,7 @@ export const CalendarWebApp: React.FC<CalendarWebAppProps> = ({
                   LỊCH AN NHIÊN
                 </span>
                 <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider bg-red-50 text-[#B3261E] border border-red-200/80 px-2 py-0.5 rounded-full whitespace-nowrap">
-                  Bính Ngọ 2026
+                  {dayData.canChi.year} {year}
                 </span>
               </div>
             </div>
@@ -940,7 +946,7 @@ export const CalendarWebApp: React.FC<CalendarWebAppProps> = ({
 
                 {/* Calendar Day Cells */}
                 <div className="grid grid-cols-7 gap-1">
-                  {calendarGrid.slice(0, 35).map((cell, idx) => {
+                  {(calendarGrid[35]?.isCurrentMonth ? calendarGrid : calendarGrid.slice(0, 35)).map((cell, idx) => {
                     const isSunday = (idx % 7) === 6;
                     return (
                       <button
@@ -1573,7 +1579,7 @@ export const CalendarWebApp: React.FC<CalendarWebAppProps> = ({
           </div>
           <div className="flex items-center gap-4 text-xs font-semibold text-slate-500">
             <span>Múi Giờ Việt Nam (UTC+7)</span>
-            <a href="http://localhost:4000/admin" target="_blank" rel="noreferrer" className="hover:text-[#B3261E]">
+            <a href="/admin" target="_blank" rel="noreferrer" className="hover:text-[#B3261E]">
               Admin CMS
             </a>
           </div>

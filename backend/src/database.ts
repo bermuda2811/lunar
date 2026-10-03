@@ -7,20 +7,20 @@ dotenv.config();
 const rawHost = process.env.DB_HOST || '127.0.0.1';
 const dbPort = parseInt(process.env.DB_PORT || '3306', 10);
 const dbUser = process.env.DB_USERNAME || process.env.DB_USER || 'root';
-const dbPassword = process.env.DB_PASSWORD || 'thanhtrung@#@1';
-const dbName = process.env.DB_DATABASE || process.env.DB_NAME || 'lich_an_nhien';
+const dbPassword = process.env.DB_PASSWORD || 'root';
+const dbName = process.env.DB_DATABASE || process.env.DB_NAME || 'luna';
 
 let poolInstance: Pool | null = null;
 
 export async function getPool(): Promise<Pool> {
   if (!poolInstance) {
     let resolvedHost = rawHost;
-    if (rawHost === 'mysql') {
+    if (rawHost === 'mysql' || rawHost === 'shared_mysql') {
       try {
-        await dns.promises.lookup('mysql');
-        resolvedHost = 'mysql';
+        await dns.promises.lookup(rawHost);
+        resolvedHost = rawHost;
       } catch {
-        // Khi chạy trực tiếp trên máy host (ngoài mạng docker), 'mysql' chưa trỏ DNS
+        // Khi chạy trực tiếp trên máy host (ngoài mạng docker), 'shared_mysql' chưa trỏ DNS
         // Tự động kết nối tới port 3306 được ánh xạ ở 127.0.0.1
         resolvedHost = '127.0.0.1';
       }
@@ -256,34 +256,6 @@ export async function initDatabase() {
     ]);
   }
 
-  // Seed sample transactions if empty
-  const [txnRows] = await pool.query('SELECT COUNT(*) as count FROM transactions') as any;
-  if (txnRows[0].count === 0) {
-    await pool.query(`
-      INSERT INTO transactions (
-        id, user_id, amount, currency, payment_method, transaction_code,
-        sender_name, sender_email, message, status, is_anonymous, created_at, completed_at
-      ) VALUES
-      (
-        'txn_seed_1', null, 50000, 'VND', 'vietqr', 'ANNHIEN_8921',
-        'Cô Thanh Hương (Hà Nội)', 'thanhhuong@gmail.com',
-        'Cảm ơn ứng dụng rất nhiều! Chữ to rõ ràng, tôi và ông nhà xem hàng ngày rất thích.',
-        'completed', 0, '2026-09-17 08:30:00', '2026-09-17 08:32:00'
-      ),
-      (
-        'txn_seed_2', null, 100000, 'VND', 'vietqr', 'ANNHIEN_9402',
-        'Chú Minh Đức (TP.HCM)', 'minhduc@gmail.com',
-        'Ủng hộ các bạn trẻ duy trì ứng dụng thuần Việt, không quảng cáo làm phiền.',
-        'completed', 0, '2026-09-18 14:15:00', '2026-09-18 14:17:00'
-      ),
-      (
-        'txn_seed_3', null, 30000, 'VND', 'momo', 'ANNHIEN_3195',
-        'Người dùng ẩn danh', null,
-        'Chúc ứng dụng Lịch An Nhiên ngày càng phát triển và giúp ích cho cộng đồng!',
-        'completed', 1, '2026-09-18 19:40:00', '2026-09-18 19:41:00'
-      )
-    `);
-  }
 
   // Seed events if empty
   const [eventRows] = await pool.query('SELECT COUNT(*) as count FROM events') as any;
@@ -347,5 +319,5 @@ export async function initDatabase() {
     `);
   }
 
-  console.log('✅ [MYSQL] Khởi tạo cơ sở dữ liệu MySQL lich_an_nhien thành công!');
+  console.log(`✅ [MYSQL] Khởi tạo cơ sở dữ liệu MySQL ${dbName} thành công!`);
 }

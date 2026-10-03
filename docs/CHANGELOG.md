@@ -2,6 +2,41 @@
 
 Mọi thay đổi đáng kể của dự án được ghi nhận tại file này theo định dạng Keep a Changelog.
 
+## [1.1.1] - 2026-10-03
+### Fixed
+- **Khắc Phục Lỗi Hiển Thị Ngày Mặc Định**:
+  - Sửa lỗi gán cứng `new Date(2026, 8, 16)` trong `web/src/App.tsx` và `mobile/App.tsx`. Ứng dụng hiện tại luôn tự động mở ra đúng ngày thực tế của người dùng (`new Date()`).
+- **Khắc Phục Thuật Toán Âm Dương Lịch Thiên Văn Hồ Ngọc Đức (UTC+7)**:
+  - **`solarToLunar`**: Sửa logic mốc `a11` và `lunarYear`. Trước đây tính sai năm âm lịch (nhảy sang năm mới sớm trước Tết) cho tất cả các ngày trong tháng 1 và đầu tháng 2 dương lịch trước Tết Nguyên Đán.
+  - **`lunarToSolar`**: Sửa lỗi tham chiếu `b11` khi tháng âm >= 11 (trước đây cả `a11` và `b11` đều trỏ vào cùng 1 năm khiến `b11 - a11` luôn bằng 0, không nhận diện được tháng nhuận).
+  - **`getDayRating`**: Sửa công thức tính sao Hoàng đạo / Hắc đạo theo Chi tháng bằng cách thêm độ dời `- 2` do tháng Giêng khởi từ Dần (index 2). Khắc phục triệt để hiện tượng đảo ngược Hoàng đạo / Hắc đạo.
+- **Tối Ưu Giao Diện & Trải Nghiệm Người Dùng**:
+  - Header badge hiển thị động `{dayData.canChi.year} {year}` thay vì gán cứng `Bính Ngọ 2026`.
+  - Tự động đồng bộ `viewMonth` và `viewYear` khi `currentDate` thay đổi.
+  - Lịch tháng mini (`Mini Calendar`) tự động hiển thị đủ 6 hàng (42 ô) đối với các tháng có ngày 30, 31 rơi vào tuần thứ 6, không còn bị cắt cụt.
+  - Bộ chọn ngày nhắc nhở mới mặc định theo ngày thực tế hôm nay thay vì hardcode `2026-09-25`.
+  - Loại bỏ các mốc sự kiện demo hardcode trong lịch tháng.
+
+### Added
+- **Bộ Kiểm Thử Độ Chính Xác Thiên Văn Tự Động**:
+  - `shared/calendar/testCalendar.ts` kiểm thử toàn diện các mốc chuyển giao năm âm lịch trước & sau Tết (2024, 2025, 2026, 2027), kiểm thử roundtrip 2 chiều và kiểm thử ngày Hoàng đạo (đạt tỷ lệ vượt qua 100%).
+
+## [1.1.0] - 2026-10-03
+### Added
+- **Triển Khai Tên Miền Chính Thức http://lichannhien.com**:
+  - Cấu hình VirtualHost Apache2 phục vụ trực tiếp tại domain `http://lichannhien.com` và `http://www.lichannhien.com`.
+  - Thiết lập cơ chế Redirect 301 vĩnh viễn từ domain thử nghiệm cũ `luna.1988.vn` và đường dẫn `1988.vn/luna` sang `http://lichannhien.com/`.
+  - Cập nhật biến môi trường `APP_URL=http://lichannhien.com`.
+
+### Changed
+- **Làm Sạch Dữ Liệu Giao Dịch & Khóa Cơ Chế Tự Động Re-seed**:
+  - Xóa bỏ dữ liệu giao dịch thử nghiệm (`txn_seed_1`, `txn_seed_2`, `txn_seed_3`) khỏi bảng `transactions`.
+  - Loại bỏ khối khởi tạo mẫu trong `backend/src/database.ts`, đảm bảo hệ thống production chỉ ghi nhận các giao dịch ủng hộ thực tế.
+  - Bảo toàn 100% dữ liệu sự kiện văn hóa (`events`), câu chúc (`daily_quotes`), cấu hình nhận tiền MB Bank (`donation_config`), cấu hình app (`app_config`), thống kê (`analytics_stats`).
+
+### Deployment
+- Đóng gói Docker image `luna_app` mới (Version 1.1.0) và khởi chạy an toàn trong cụm mạng `shared_net` kết nối MySQL `luna`.
+
 ## [0.2.7] - 2026-09-19
 ### Changed
 - **Tối Ưu Phân Bố Tính Năng & Tinh Gọn Giao Diện Web Theo Yêu Cầu**:

@@ -74,7 +74,7 @@ export const MobileReviewView: React.FC<MobileReviewViewProps> = ({
             title="Quay lại giao diện Web dành cho máy tính"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>← Web Người Dùng (localhost:3000)</span>
+            <span>← Web Người Dùng</span>
           </button>
 
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#B3261E] to-red-500 flex items-center justify-center text-white font-bold shadow-md shrink-0">
@@ -110,7 +110,7 @@ export const MobileReviewView: React.FC<MobileReviewViewProps> = ({
 
           {/* Direct link to Screen 11: Backend Admin CMS */}
           <a
-            href="http://localhost:4000/admin"
+            href="/admin"
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#B3261E] text-white shadow-md shadow-red-900/40 hover:bg-[#8B1D1D] transition-all"

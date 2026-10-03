@@ -1,0 +1,17 @@
+services:
+  luna_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: luna_app
+    restart: always
+    env_file: .env
+    ports:
+      - "8087:4000"
+    networks:
+      - shared_net
+
+networks:
+  shared_net:
+    name: shared_net
+    external: true

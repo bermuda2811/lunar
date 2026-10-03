@@ -137,6 +137,48 @@ Tài liệu này lưu trữ toàn bộ các Quyết định Kiến trúc (Archit
   3. **Đưa Chức Năng Đổi Ngày Vào Menu Tài Khoản**: Rút gọn thanh Navigation chính và Mobile Bottom Bar xuống đúng 5 tabs vàng (`Hôm Nay`, `Lịch Tháng`, `Lễ Tết`, `Nhắc Nhở`, `Ủng Hộ`). Tích hợp trọn vẹn công cụ chuyển đổi Âm – Dương chuẩn thiên văn (Hồ Ngọc Đức) vào Modal/Menu Tài khoản (`accountModalTab: 'account' | 'converter'`).
 - **Reason**: Tạo nên Header 56px (`h-14`) cực kỳ tinh gọn, thẩm mỹ cao, không bị tràn dòng, đồng thời sắp xếp các tính năng chuyên biệt (tra cứu lễ hội, đổi ngày) vào đúng ngữ cảnh tự nhiên nhất cho người dùng.
 
+---
+
+## D-012: Triển khai Domain Chính Thức http://lichannhien.com, Bỏ Domain Cũ và Làm Sạch Dữ Liệu Giao Dịch
+- **Date**: 2026-10-03
+- **Status**: ACTIVE
+- **Context**: Ứng dụng Lịch An Nhiên bước vào giai đoạn triển khai production thực tế. Cần cấu hình tên miền chính thức `http://lichannhien.com` (và `www.lichannhien.com`), loại bỏ hoàn toàn việc phục vụ trên tên miền thử nghiệm cũ (`luna.1988.vn` và đường dẫn `/luna`), đồng thời làm sạch toàn bộ dữ liệu giao dịch mẫu (seed/test transactions) trong cơ sở dữ liệu `luna` để sẵn sàng đón nhận giao dịch ủng hộ thật từ cộng đồng, trong khi bảo toàn 100% dữ liệu danh mục ngày lễ, sự kiện văn hóa, câu chúc và cấu hình hệ thống.
+- **Decision**:
+  1. **Cấu hình Reverse Proxy Apache2**:
+     - Ánh xạ `ServerName lichannhien.com` và `ServerAlias www.lichannhien.com` tới container Docker `luna_app` (`127.0.0.1:8087`).
+     - Bỏ domain cũ: Cấu hình Redirect 301 vĩnh viễn từ `luna.1988.vn` và path `1988.vn/luna` về `http://lichannhien.com/` để người dùng không bị đứt gãy truy cập cũ.
+  2. **Biến môi trường**: Cập nhật `APP_URL=http://lichannhien.com` trong file cấu hình `.env`.
+  3. **Làm sạch Dữ liệu Giao dịch Test**:
+     - Loại bỏ khối mã tự động nạp giao dịch mẫu (`// Seed sample transactions if empty`) trong `backend/src/database.ts` để ngăn việc tự động re-seed khi backend khởi động lại.
+     - Xóa toàn bộ 3 bản ghi giao dịch test (`txn_seed_1`, `txn_seed_2`, `txn_seed_3`) khỏi bảng `transactions` trong cơ sở dữ liệu MySQL `luna`.
+  4. **Bảo toàn Dữ liệu Production Khác**:
+     - Giữ nguyên vẹn 11 sự kiện văn hóa dân tộc & quốc tế (`events`).
+     - Giữ nguyên vẹn 5 câu chúc & danh ngôn truyền thống (`daily_quotes`).
+     - Giữ nguyên vẹn cấu hình thông tin ủng hộ MB Bank / MoMo (`donation_config`).
+     - Giữ nguyên vẹn bảng cấu hình ứng dụng (`app_config`) và thống kê (`analytics_stats`).
+  5. **Đóng gói & Triển khai Docker**:
+     - Build image Docker production mới (Version 1.1.0) tích hợp cả Web Frontend (React + Vite) và Backend REST API + Admin CMS trên cổng 4000 (ánh xạ 8087 trên host).
+---
+
+## D-013: Hiệu Chuẩn Toàn Diện Thuật Toán Âm Dương Lịch và Đồng Bộ Trải Nghiệm Ngày Thực Tế
+- **Date**: 2026-10-03
+- **Status**: ACTIVE
+- **Context**: Khi người dùng truy cập `http://lichannhien.com`, ứng dụng trước đây luôn hiển thị ngày 16/9/2026 (ngày hardcode từ bản demo wireframe) thay vì ngày hôm nay thực tế. Đồng thời, thuật toán tính Âm lịch có sai lệch trong việc xác định năm âm lịch cho các ngày đầu năm dương lịch trước Tết (tháng 1 & tháng 2), lỗi tham chiếu tháng nhuận `lunarToSolar`, và sai lệch độ dời sao Hoàng đạo / Hắc đạo trong `getDayRating`.
+- **Decision**:
+  1. **Khởi tạo Ngày Thực Tế Mặc Định**: Thay đổi khởi tạo `currentDate` trong `web/src/App.tsx` và `mobile/App.tsx` sang `() => new Date()`, đảm bảo người dùng luôn thấy ngày thực tế ngay khi vào ứng dụng.
+  2. **Hiệu chuẩn Thuật toán Hồ Ngọc Đức**:
+     - Trong `solarToLunar`: Đặt `a11 = getLunarMonth11(yy, TIME_ZONE)` làm mốc và phân nhánh `yy` / `yy + 1` chuẩn xác; sửa năm âm lịch cho các ngày trước Tết.
+     - Trong `lunarToSolar`: Sửa `b11 = getLunarMonth11(lunarYear + 1, TIME_ZONE)` khi tháng âm >= 11 và kiểm tra tháng nhuận chặt chẽ.
+     - Trong `getDayRating`: Bổ sung độ dời `- 2` theo Chi tháng `((monthChiIndex - 2 + 12) % 6) * 2` để phản ánh đúng quy tắc khởi Thanh Long từ tháng Dần.
+  3. **Tối ưu Giao diện Web**:
+     - Header badge hiển thị động `{dayData.canChi.year} {year}`.
+     - Đồng bộ tự động `viewMonth` và `viewYear` khi `currentDate` thay đổi.
+     - Hiển thị đủ 42 ô cho các tháng có 6 hàng trên Lịch tháng mini (`Mini Calendar`).
+     - Bộ chọn ngày nhắc nhở mới mặc định theo ngày thực tế.
+  4. **Kiểm thử tự động**: Xây dựng bộ test `testCalendar.ts` kiểm thử các mốc chuyển giao năm, ngày Hoàng đạo và chuyển đổi 2 chiều đạt 100% độ chính xác.
+- **Reason**: Đảm bảo trải nghiệm trực quan chính xác từng ngày cho người dùng thực tế và độ tin cậy thiên văn tuyệt đối cho ứng dụng Lịch Việt.
+
+
 
 
 

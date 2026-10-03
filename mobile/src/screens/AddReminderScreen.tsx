@@ -28,7 +28,10 @@ export const AddReminderScreen: React.FC<AddReminderScreenProps> = ({
 }) => {
   const [title, setTitle] = useState('');
   const [calendarType, setCalendarType] = useState<'solar' | 'lunar' | 'both'>('both');
-  const [dateStr, setDateStr] = useState('2026-09-25');
+  const [dateStr, setDateStr] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  });
   const [repeat, setRepeat] = useState<'none' | 'daily' | 'weekly' | 'monthly' | 'yearly'>('yearly');
   const [time, setTime] = useState('all_day');
   const [remindBeforeDays, setRemindBeforeDays] = useState(1);
@@ -36,10 +39,11 @@ export const AddReminderScreen: React.FC<AddReminderScreenProps> = ({
   const [notes, setNotes] = useState('');
 
   // Calculate lunar equivalent
+  const now = new Date();
   const parts = dateStr.split('-').map((n) => parseInt(n, 10));
-  const year = parts[0] || 2026;
-  const month = parts[1] || 9;
-  const day = parts[2] || 25;
+  const year = parts[0] || now.getFullYear();
+  const month = parts[1] || (now.getMonth() + 1);
+  const day = parts[2] || now.getDate();
   const lunar = solarToLunar(day, month, year);
   const lunarDisplay = `${lunar.day}/${lunar.month} âm lịch`;
 

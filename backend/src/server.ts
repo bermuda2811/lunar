@@ -1,6 +1,8 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
 import { Resend } from 'resend';
 import { db, initDatabase } from './database';
 import { getAdminHtml } from './admin/adminHtml';
@@ -23,11 +25,20 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve Admin CMS at /admin and /
-app.get('/', (req: Request, res: Response) => {
-  res.send(getAdminHtml());
-});
+// Serve static frontend build if available
+const candidatePaths = [
+  path.resolve(process.cwd(), 'web/dist'),
+  path.resolve(process.cwd(), '../web/dist'),
+  path.resolve(__dirname, '../../../../web/dist'),
+  path.resolve(__dirname, '../../web/dist'),
+];
+const webDistPath = candidatePaths.find(p => fs.existsSync(p)) || candidatePaths[0];
+const webDistExists = fs.existsSync(webDistPath);
+if (webDistExists) {
+  app.use(express.static(webDistPath));
+}
 
+// Serve Admin CMS at /admin
 app.get('/admin', (req: Request, res: Response) => {
   res.send(getAdminHtml());
 });
@@ -985,11 +996,22 @@ app.patch('/api/v1/donation/transactions/:id/confirm', async (req: Request, res:
   }
 });
 
+// Fallback for SPA frontend routes and direct visits
+app.use((req: Request, res: Response) => {
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ error: 'Endpoint not found' });
+  }
+  if (webDistExists && fs.existsSync(path.join(webDistPath, 'index.html'))) {
+    return res.sendFile(path.join(webDistPath, 'index.html'));
+  }
+  res.send(getAdminHtml());
+});
+
 // Start Server
 app.listen(PORT, () => {
   console.log(`================================================`);
   console.log(`🚀 Lịch Việt Backend Server & Admin CMS Live!`);
-  console.log(`🗄️ Database:        MySQL (database: ${process.env.DB_NAME || 'lich_an_nhien'})`);
+  console.log(`🗄️ Database:        MySQL (database: ${process.env.DB_DATABASE || process.env.DB_NAME || 'luna'})`);
   console.log(`📍 Web Admin CMS:   http://localhost:${PORT}/admin`);
   console.log(`📍 REST API:        http://localhost:${PORT}/api/v1`);
   console.log(`================================================`);

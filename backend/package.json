@@ -1,12 +1,12 @@
 {
   "name": "backend",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "description": "",
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node dist/backend/src/server.js",
     "test": "echo \"Tests passed\""
   },
   "keywords": [],

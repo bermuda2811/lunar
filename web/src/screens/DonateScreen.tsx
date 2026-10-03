@@ -64,7 +64,7 @@ export const DonateScreen: React.FC<DonateScreenProps> = ({ onNavigate }) => {
 
   // Load config & public transactions
   useEffect(() => {
-    fetch('http://localhost:4000/api/v1/donation/config')
+    fetch('/api/v1/donation/config')
       .then(res => res.json())
       .then(data => {
         if (data.success && data.data) {
@@ -73,7 +73,7 @@ export const DonateScreen: React.FC<DonateScreenProps> = ({ onNavigate }) => {
       })
       .catch(() => {});
 
-    fetch('http://localhost:4000/api/v1/donation/transactions?publicOnly=true')
+    fetch('/api/v1/donation/transactions?publicOnly=true')
       .then(res => res.json())
       .then(data => {
         if (data.success && Array.isArray(data.data)) {
@@ -106,7 +106,7 @@ export const DonateScreen: React.FC<DonateScreenProps> = ({ onNavigate }) => {
 
     try {
       setIsSubmitting(true);
-      const res = await fetch('http://localhost:4000/api/v1/donation/transactions', {
+      const res = await fetch('/api/v1/donation/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -139,7 +139,7 @@ export const DonateScreen: React.FC<DonateScreenProps> = ({ onNavigate }) => {
   const handleConfirmDonated = async () => {
     if (activeTransaction) {
       try {
-        await fetch(`http://localhost:4000/api/v1/donation/transactions/${activeTransaction.id}/confirm`, {
+        await fetch(`/api/v1/donation/transactions/${activeTransaction.id}/confirm`, {
           method: 'PATCH',
         });
       } catch (err) {}

@@ -1,0 +1,7 @@
+node_modules
+backend/node_modules
+web/node_modules
+.git
+backend/dist
+web/dist
+wireframe.png

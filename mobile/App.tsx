@@ -117,8 +117,8 @@ function MainApp() {
   const bottomInset = insets.bottom;
 
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('daily_overview');
-  // Initialize with 16/9/2026 to match wireframe showcase
-  const [currentDate, setCurrentDate] = useState<Date>(new Date(2026, 8, 16));
+  // Initialize with current real date
+  const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
   const [selectedEventId, setSelectedEventId] = useState<number>(8);
 
   const [currentUser, setCurrentUser] = useState<UserAccount>({
