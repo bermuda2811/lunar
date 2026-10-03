@@ -1,0 +1,11 @@
+# robots.txt for https://lichannhien.com
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /mobile-review
+Disallow: /review
+
+# Host & Sitemap
+Host: https://lichannhien.com
+Sitemap: https://lichannhien.com/sitemap.xml

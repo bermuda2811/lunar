@@ -4,7 +4,7 @@ export function getAdminHtml(): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lịch Việt — Hệ Thống Quản Trị Backend CMS</title>
+  <title>Lịch An Nhiên — Hệ Thống Quản Trị Backend CMS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Serif:wght@600;700&display=swap" rel="stylesheet">
@@ -35,11 +35,161 @@ export function getAdminHtml(): string {
     body {
       background-color: var(--bg);
       color: var(--text);
+      min-height: 100vh;
       display: flex;
+    }
+
+    /* LOGIN SCREEN STYLES */
+    .login-wrapper {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #131926 0%, #1E273A 50%, #2A1D20 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 9999;
+    }
+
+    .login-card {
+      background: #FFFFFF;
+      width: 100%;
+      max-width: 440px;
+      border-radius: 20px;
+      padding: 36px 32px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .login-logo {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 14px;
+      background: linear-gradient(135deg, #B3261E, #8B1D1D);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 26px;
+      box-shadow: 0 8px 16px rgba(179, 38, 30, 0.35);
+    }
+
+    .login-header h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: #1E293B;
+      letter-spacing: -0.5px;
+    }
+
+    .login-header p {
+      font-size: 13px;
+      color: #64748B;
+      margin-top: 4px;
+    }
+
+    .alert-error {
+      background: #FEF2F2;
+      border: 1px solid #FCA5A5;
+      color: #B91C1C;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-toggle-eye {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #94A3B8;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 4px;
+    }
+
+    .btn-toggle-eye:hover {
+      color: var(--primary);
+    }
+
+    .btn-login-submit {
+      width: 100%;
+      background: linear-gradient(135deg, #B3261E, #991B1B);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+      margin-top: 10px;
+      box-shadow: 0 4px 12px rgba(179, 38, 30, 0.3);
+    }
+
+    .btn-login-submit:hover {
+      background: linear-gradient(135deg, #991B1B, #7F1D1D);
+      transform: translateY(-1px);
+    }
+
+    .login-footer {
+      margin-top: 24px;
+      text-align: center;
+      border-top: 1px solid #F1F5F9;
+      padding-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .login-hint {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #475569;
+    }
+
+    .link-back-web {
+      color: #64748B;
+      text-decoration: none;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+
+    .link-back-web:hover {
+      color: var(--primary);
+    }
+
+    /* DASHBOARD WRAPPER */
+    .dashboard-wrapper {
+      display: flex;
+      width: 100%;
       min-height: 100vh;
     }
 
-    /* SIDEBAR (Matches Screen 11 Wireframe) */
+    /* SIDEBAR */
     .sidebar {
       width: 250px;
       background-color: var(--sidebar-bg);
@@ -56,6 +206,7 @@ export function getAdminHtml(): string {
       align-items: center;
       gap: 12px;
       border-bottom: 1px solid rgba(255,255,255,0.08);
+      cursor: pointer;
     }
 
     .brand-icon {
@@ -95,7 +246,7 @@ export function getAdminHtml(): string {
       border-radius: 8px;
       color: #94A3B8;
       text-decoration: none;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 500;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -122,11 +273,27 @@ export function getAdminHtml(): string {
     .sidebar-footer {
       padding: 16px 20px;
       border-top: 1px solid rgba(255,255,255,0.08);
-      font-size: 12px;
-      color: #64748B;
+      font-size: 13px;
+      color: #94A3B8;
       display: flex;
       align-items: center;
       justify-content: space-between;
+    }
+
+    .btn-icon-logout {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #F87171;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .btn-icon-logout:hover {
+      background: #DC2626;
+      color: #fff;
     }
 
     /* MAIN CONTENT */
@@ -144,6 +311,7 @@ export function getAdminHtml(): string {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 16px;
     }
 
     .header-title h1 {
@@ -161,19 +329,44 @@ export function getAdminHtml(): string {
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
     }
 
     .badge-api {
       background: #E8F5E9;
       color: #2E7D32;
-      padding: 6px 12px;
+      padding: 8px 14px;
       border-radius: 20px;
       font-size: 13px;
       font-weight: 600;
       display: flex;
       align-items: center;
       gap: 6px;
+      transition: opacity 0.2s;
+    }
+
+    .badge-api:hover {
+      opacity: 0.85;
+    }
+
+    .btn-header-logout {
+      background: #FEE2E2;
+      color: #DC2626;
+      border: 1px solid #FECACA;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-header-logout:hover {
+      background: #DC2626;
+      color: #fff;
     }
 
     .content-body {
@@ -198,6 +391,17 @@ export function getAdminHtml(): string {
       align-items: center;
       gap: 16px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .stat-card.clickable {
+      cursor: pointer;
+    }
+
+    .stat-card.clickable:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.06);
+      border-color: #CBD5E1;
     }
 
     .stat-icon {
@@ -208,6 +412,7 @@ export function getAdminHtml(): string {
       align-items: center;
       justify-content: center;
       font-size: 20px;
+      flex-shrink: 0;
     }
 
     .stat-icon.red { background: #FFEBEE; color: #B3261E; }
@@ -243,6 +448,8 @@ export function getAdminHtml(): string {
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid var(--border);
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
     .card-title {
@@ -255,7 +462,7 @@ export function getAdminHtml(): string {
       background-color: var(--primary);
       color: #fff;
       border: none;
-      padding: 10px 20px;
+      padding: 10px 18px;
       border-radius: 8px;
       font-size: 14px;
       font-weight: 600;
@@ -270,7 +477,7 @@ export function getAdminHtml(): string {
       background-color: var(--primary-dark);
     }
 
-    /* TABLE STYLES (Matching Screen 11 Wireframe) */
+    /* TABLE STYLES */
     .table-responsive {
       overflow-x: auto;
     }
@@ -370,51 +577,6 @@ export function getAdminHtml(): string {
       background: #FFEBEE;
     }
 
-    /* WIREFRAME FEATURE INFO BOX (Matching Screen 11) */
-    .wireframe-info-box {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      background: linear-gradient(135deg, #FAF7F2, #FFFBF5);
-      border: 1px solid #EAD8C7;
-      border-radius: 12px;
-      padding: 24px;
-      margin-top: 10px;
-    }
-
-    .info-section h3 {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--primary-dark);
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .info-section ul {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      font-size: 14px;
-      color: #4A5568;
-    }
-
-    .info-section li {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      line-height: 1.5;
-    }
-
-    .info-section li::before {
-      content: "•";
-      color: var(--primary);
-      font-size: 18px;
-      line-height: 1;
-    }
-
     /* MODAL */
     .modal-overlay {
       position: fixed;
@@ -477,6 +639,7 @@ export function getAdminHtml(): string {
       display: flex;
       flex-direction: column;
       gap: 6px;
+      margin-bottom: 12px;
     }
 
     .form-row {
@@ -533,236 +696,274 @@ export function getAdminHtml(): string {
 </head>
 <body>
 
-  <!-- SIDEBAR (Khớp Screen 11 Wireframe) -->
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-icon">
-        <i class="fa-solid fa-calendar-days"></i>
-      </div>
-      <div class="brand-text">Lịch Việt</div>
-    </div>
-
-    <ul class="nav-menu">
-      <li class="nav-item" onclick="switchTab('overview')">
-        <i class="fa-solid fa-house"></i>
-        <span>Tổng quan</span>
-      </li>
-      <li class="nav-item active" onclick="switchTab('events')">
-        <i class="fa-solid fa-calendar-check"></i>
-        <span>Quản lý sự kiện</span>
-      </li>
-      <li class="nav-item" onclick="switchTab('quotes')">
-        <i class="fa-solid fa-pen-nib"></i>
-        <span>Quản lý nội dung</span>
-      </li>
-      <li class="nav-item" onclick="switchTab('users')">
-        <i class="fa-solid fa-users"></i>
-        <span>Quản lý người dùng</span>
-      </li>
-      <li class="nav-item" onclick="switchTab('analytics')">
-        <i class="fa-solid fa-chart-pie"></i>
-        <span>Thống kê</span>
-      </li>
-      <li class="nav-item" onclick="switchTab('donations')">
-        <i class="fa-solid fa-hand-holding-heart"></i>
-        <span>Ủng hộ & VietQR</span>
-      </li>
-      <li class="nav-item" onclick="switchTab('settings')">
-        <i class="fa-solid fa-gear"></i>
-        <span>Cài đặt</span>
-      </li>
-    </ul>
-
-    <div class="sidebar-footer">
-      <span>Hệ thống CMS v1.0</span>
-      <i class="fa-solid fa-circle-check" style="color: #4CAF50;"></i>
-    </div>
-  </aside>
-
-  <!-- MAIN CONTAINER -->
-  <main class="main-container">
-    <header class="top-header">
-      <div class="header-title">
-        <h1 id="page-title">Quản lý sự kiện</h1>
-        <p>Quản lý toàn bộ sự kiện văn hóa, ngày lễ Việt Nam & Quốc tế cho ứng dụng di động</p>
-      </div>
-      <div class="header-actions">
-        <div class="badge-api">
-          <i class="fa-solid fa-satellite-dish"></i> API Live: Port 4000
+  <!-- 1. LOGIN SCREEN (Requires login to access) -->
+  <div id="login-screen" class="login-wrapper">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">
+          <i class="fa-solid fa-calendar-days"></i>
         </div>
-        <a href="http://localhost:3000" target="_blank" class="btn-primary" style="background:#263045; text-decoration:none;">
-          <i class="fa-solid fa-mobile-screen"></i> Mở Web Lịch App
+        <h2>LỊCH AN NHIÊN</h2>
+        <p>Hệ Thống Quản Trị Backend CMS</p>
+      </div>
+
+      <div id="login-error" class="alert-error" style="display: none;"></div>
+
+      <form id="login-form" onsubmit="handleAdminLogin(event)">
+        <div class="form-group">
+          <label for="login-username"><i class="fa-solid fa-user"></i> Tên đăng nhập / Email</label>
+          <input type="text" id="login-username" class="form-control" placeholder="admin" value="admin" required autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <label for="login-password"><i class="fa-solid fa-lock"></i> Mật khẩu</label>
+          <div style="position: relative;">
+            <input type="password" id="login-password" class="form-control" placeholder="Nhập mật khẩu..." required autocomplete="current-password" style="padding-right: 38px;">
+            <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility()">
+              <i id="eye-icon" class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="btn-submit-login" class="btn-login-submit">
+          <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập vào hệ thống
+        </button>
+      </form>
+
+      <div class="login-footer">
+        <div class="login-hint">
+          <i class="fa-solid fa-circle-info"></i> Tên đăng nhập: <strong>admin</strong> | Mật khẩu: <strong>admin123</strong>
+        </div>
+        <a href="http://localhost:3000" data-to-web class="link-back-web">
+          <i class="fa-solid fa-arrow-left"></i> Về trang ứng dụng Lịch An Nhiên
         </a>
       </div>
-    </header>
+    </div>
+  </div>
 
-    <div class="content-body">
-      <!-- STATS ROW -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon red">
-            <i class="fa-solid fa-calendar-star"></i>
-          </div>
-          <div class="stat-info">
-            <div class="stat-value" id="stat-total-events">11</div>
-            <div class="stat-label">Tổng sự kiện trong hệ thống</div>
-          </div>
+  <!-- 2. DASHBOARD SCREEN (Only shown after successful login) -->
+  <div id="dashboard-screen" class="dashboard-wrapper" style="display: none;">
+    <!-- SIDEBAR (All items are strictly linked and functional) -->
+    <aside class="sidebar">
+      <a href="/admin" class="brand" style="text-decoration: none; color: inherit;">
+        <div class="brand-icon">
+          <i class="fa-solid fa-calendar-days"></i>
         </div>
+        <div class="brand-text">Lịch Việt Admin</div>
+      </a>
 
-        <div class="stat-card">
-          <div class="stat-icon green">
-            <i class="fa-solid fa-check-double"></i>
-          </div>
-          <div class="stat-info">
-            <div class="stat-value" id="stat-active-events">11</div>
-            <div class="stat-label">Đang hiển thị trên App</div>
-          </div>
-        </div>
+      <ul class="nav-menu">
+        <li class="nav-item active" id="nav-events" onclick="switchTab('events')">
+          <i class="fa-solid fa-calendar-check"></i>
+          <span>Quản lý sự kiện</span>
+        </li>
+        <li class="nav-item" id="nav-donations" onclick="switchTab('donations')">
+          <i class="fa-solid fa-hand-holding-heart"></i>
+          <span>Ủng hộ & VietQR</span>
+        </li>
+        <li style="margin: 8px 16px; height: 1px; background: rgba(255,255,255,0.08);"></li>
+        <a href="http://localhost:3000" data-to-web target="_blank" class="nav-item" style="text-decoration:none;">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          <span>Mở Web Lịch App</span>
+        </a>
+        <a href="/api/v1/health" target="_blank" class="nav-item" style="text-decoration:none;">
+          <i class="fa-solid fa-heart-pulse"></i>
+          <span>Trạng thái REST API</span>
+        </a>
+        <a href="/api/v1/events" target="_blank" class="nav-item" style="text-decoration:none;">
+          <i class="fa-solid fa-code"></i>
+          <span>Dữ liệu JSON Sự kiện</span>
+        </a>
+      </ul>
 
-        <div class="stat-card">
-          <div class="stat-icon blue">
-            <i class="fa-solid fa-moon"></i>
-          </div>
-          <div class="stat-info">
-            <div class="stat-value">3</div>
-            <div class="stat-label">Ngày lễ Âm lịch</div>
-          </div>
+      <div class="sidebar-footer">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-user-shield" style="color: #4CAF50;"></i>
+          <span id="sidebar-user-display" style="color: #fff; font-weight: 600;">admin</span>
         </div>
-
-        <div class="stat-card">
-          <div class="stat-icon orange">
-            <i class="fa-solid fa-users"></i>
-          </div>
-          <div class="stat-info">
-            <div class="stat-value">1,680</div>
-            <div class="stat-label">Người dùng tích cực</div>
-          </div>
-        </div>
+        <button class="btn-icon-logout" onclick="logoutAdmin()" title="Đăng xuất">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
       </div>
+    </aside>
 
-      <!-- MAIN TABLE CARD (Khớp 100% Màn hình 11) -->
-      <div class="card" id="events-section">
-        <div class="card-header">
-          <div class="card-title">Danh sách sự kiện</div>
-          <button class="btn-primary" onclick="openAddEventModal()">
-            <i class="fa-solid fa-plus"></i> Thêm sự kiện
+    <!-- MAIN CONTAINER -->
+    <main class="main-container">
+      <header class="top-header">
+        <div class="header-title">
+          <h1 id="page-title">Quản lý sự kiện</h1>
+          <p id="page-desc">Quản lý toàn bộ sự kiện văn hóa, ngày lễ Việt Nam & Quốc tế cho ứng dụng di động</p>
+        </div>
+        <div class="header-actions">
+          <a href="/api/v1/health" target="_blank" class="badge-api" style="text-decoration: none;" title="Xem endpoint API Live">
+            <i class="fa-solid fa-satellite-dish"></i> API Live: Port 4000
+          </a>
+          <a href="http://localhost:3000" data-to-web target="_blank" class="btn-primary" style="background:#263045; text-decoration:none;">
+            <i class="fa-solid fa-mobile-screen"></i> Mở Web Lịch App
+          </a>
+
+          <button class="btn-header-logout" onclick="logoutAdmin()">
+            <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
           </button>
         </div>
+      </header>
 
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>Ngày</th>
-                <th>Tên sự kiện</th>
-                <th>Loại</th>
-                <th>Trạng thái</th>
-                <th style="text-align: right;">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody id="events-table-body">
-              <!-- Rendered via JS -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- DONATIONS & VIETQR SECTION -->
-      <div class="card" id="donations-section" style="display: none; margin-bottom: 24px;">
-        <div class="card-header">
-          <div class="card-title">Cấu hình VietQR & Quản lý ủng hộ</div>
-          <button class="btn-primary" onclick="saveDonationConfig()">
-            <i class="fa-solid fa-floppy-disk"></i> Lưu cấu hình QR
-          </button>
-        </div>
-
-        <div style="padding: 20px;">
-          <!-- Config Grid -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; background: #FAFBFD; border: 1px solid #E2E8F0; padding: 18px; border-radius: 12px;">
-            <div class="form-group">
-              <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Ngân hàng</label>
-              <input type="text" id="cfg-bank-name" class="form-control" value="MB Bank (Ngân hàng Quân Đội)">
+      <div class="content-body">
+        <!-- STATS ROW (All cards are linked and interactive) -->
+        <div class="stats-grid">
+          <div class="stat-card clickable" onclick="filterEvents('all')" title="Bấm để xem tất cả sự kiện">
+            <div class="stat-icon red">
+              <i class="fa-solid fa-calendar-star"></i>
             </div>
-            <div class="form-group">
-              <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Số tài khoản</label>
-              <input type="text" id="cfg-account-number" class="form-control" value="0988668899">
-            </div>
-            <div class="form-group">
-              <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Chủ tài khoản (In hoa không dấu)</label>
-              <input type="text" id="cfg-account-holder" class="form-control" value="NGUYEN TRUNG">
-            </div>
-            <div class="form-group">
-              <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Mã BIN ngân hàng</label>
-              <input type="text" id="cfg-bank-bin" class="form-control" value="970422">
-            </div>
-            <div class="form-group">
-              <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Ví MoMo (Số điện thoại)</label>
-              <input type="text" id="cfg-momo-phone" class="form-control" value="0988668899">
-            </div>
-            <div class="form-group">
-              <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Cú pháp chuyển khoản mặc định</label>
-              <input type="text" id="cfg-transfer-syntax" class="form-control" value="LICHVIET">
+            <div class="stat-info">
+              <div class="stat-value" id="stat-total-events">--</div>
+              <div class="stat-label">Tổng sự kiện trong hệ thống</div>
             </div>
           </div>
 
-          <!-- Transactions Table -->
-          <div style="margin-top: 10px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-              <h3 style="font-size: 16px; font-weight: 700; color: #1E293B;">
-                <i class="fa-solid fa-list-check" style="color: #B3261E; margin-right: 6px;"></i>
-                Danh sách giao dịch ủng hộ (Transactions)
-              </h3>
-              <button class="btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="loadDonationsData()">
-                <i class="fa-solid fa-rotate"></i> Làm mới
+          <div class="stat-card clickable" onclick="filterEvents('active')" title="Bấm để lọc sự kiện đang hiển thị">
+            <div class="stat-icon green">
+              <i class="fa-solid fa-check-double"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-active-events">--</div>
+              <div class="stat-label">Đang hiển thị trên App</div>
+            </div>
+          </div>
+
+          <div class="stat-card clickable" onclick="filterEvents('lunar')" title="Bấm để lọc sự kiện Âm lịch">
+            <div class="stat-icon blue">
+              <i class="fa-solid fa-moon"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-lunar-events">--</div>
+              <div class="stat-label">Ngày lễ Âm lịch</div>
+            </div>
+          </div>
+
+          <div class="stat-card clickable" onclick="switchTab('donations')" title="Bấm để mở danh sách giao dịch ủng hộ">
+            <div class="stat-icon orange">
+              <i class="fa-solid fa-hand-holding-heart"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-donations-count">--</div>
+              <div class="stat-label">Giao dịch ủng hộ VietQR</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MAIN TABLE CARD: QUẢN LÝ SỰ KIỆN -->
+        <div class="card" id="events-section">
+          <div class="card-header">
+            <div class="card-title">Danh sách sự kiện</div>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+              <input type="text" id="event-search-input" placeholder="Tìm theo tên..." oninput="handleSearchEvents(this.value)" class="form-control" style="padding: 6px 12px; font-size: 13px; width: 180px;">
+              <select id="event-filter-category" onchange="handleCategoryFilter(this.value)" class="form-control" style="padding: 6px 12px; font-size: 13px;">
+                <option value="all">Tất cả danh mục</option>
+                <option value="Lễ Việt Nam">Lễ Việt Nam</option>
+                <option value="Quốc tế">Quốc tế</option>
+                <option value="Âm lịch">Âm lịch</option>
+              </select>
+              <button class="btn-primary" onclick="openAddEventModal()">
+                <i class="fa-solid fa-plus"></i> Thêm sự kiện
               </button>
             </div>
+          </div>
 
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Mã giao dịch</th>
-                    <th>Người ủng hộ</th>
-                    <th>Số tiền</th>
-                    <th>Phương thức</th>
-                    <th>Lời nhắn</th>
-                    <th>Thời gian</th>
-                    <th>Trạng thái</th>
-                    <th style="text-align: right;">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody id="donations-table-body">
-                  <!-- Rendered via JS -->
-                </tbody>
-              </table>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ngày</th>
+                  <th>Tên sự kiện</th>
+                  <th>Loại</th>
+                  <th>Trạng thái</th>
+                  <th style="text-align: right;">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="events-table-body">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- DONATIONS & VIETQR SECTION -->
+        <div class="card" id="donations-section" style="display: none; margin-bottom: 24px;">
+          <div class="card-header">
+            <div class="card-title">Cấu hình VietQR & Quản lý ủng hộ</div>
+            <button class="btn-primary" onclick="saveDonationConfig()">
+              <i class="fa-solid fa-floppy-disk"></i> Lưu cấu hình QR
+            </button>
+          </div>
+
+          <div style="padding: 20px;">
+            <!-- Config Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; background: #FAFBFD; border: 1px solid #E2E8F0; padding: 18px; border-radius: 12px;">
+              <div class="form-group">
+                <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Ngân hàng</label>
+                <input type="text" id="cfg-bank-name" class="form-control" value="MB Bank (Ngân hàng Quân Đội)">
+              </div>
+              <div class="form-group">
+                <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Số tài khoản</label>
+                <input type="text" id="cfg-account-number" class="form-control" value="0988668899">
+              </div>
+              <div class="form-group">
+                <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Chủ tài khoản (In hoa không dấu)</label>
+                <input type="text" id="cfg-account-holder" class="form-control" value="NGUYEN TRUNG">
+              </div>
+              <div class="form-group">
+                <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Mã BIN ngân hàng</label>
+                <input type="text" id="cfg-bank-bin" class="form-control" value="970422">
+              </div>
+              <div class="form-group">
+                <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Ví MoMo (Số điện thoại)</label>
+                <input type="text" id="cfg-momo-phone" class="form-control" value="0988668899">
+              </div>
+              <div class="form-group">
+                <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Cú pháp chuyển khoản mặc định</label>
+                <input type="text" id="cfg-transfer-syntax" class="form-control" value="LICHVIET">
+              </div>
+            </div>
+
+            <!-- Transactions Table -->
+            <div style="margin-top: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 style="font-size: 16px; font-weight: 700; color: #1E293B;">
+                  <i class="fa-solid fa-list-check" style="color: #B3261E; margin-right: 6px;"></i>
+                  Danh sách giao dịch ủng hộ (Transactions)
+                </h3>
+                <button class="btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="loadDonationsData()">
+                  <i class="fa-solid fa-rotate"></i> Làm mới
+                </button>
+              </div>
+
+              <div class="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Mã giao dịch</th>
+                      <th>Người ủng hộ</th>
+                      <th>Số tiền</th>
+                      <th>Phương thức</th>
+                      <th>Lời nhắn</th>
+                      <th>Thời gian</th>
+                      <th>Trạng thái</th>
+                      <th style="text-align: right;">Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody id="donations-table-body">
+                    <!-- Rendered via JS -->
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- FEATURE INFO BOX (Khớp 100% Khung thông tin wireframe) -->
-      <div class="wireframe-info-box">
-        <div class="info-section">
-          <h3><i class="fa-solid fa-sliders"></i> Chức năng admin:</h3>
-          <ul>
-            <li>Quản lý sự kiện, ngày lễ, nội dung ý nghĩa</li>
-            <li>Cập nhật câu chúc theo ngày</li>
-            <li>Quản lý biểu tượng, danh mục</li>
-            <li>Thống kê người dùng</li>
-          </ul>
-        </div>
-        <div class="info-section">
-          <h3><i class="fa-solid fa-bolt"></i> API cung cấp cho app:</h3>
-          <ul>
-            <li>Danh sách sự kiện đầy đủ</li>
-            <li>Nội dung chi tiết & phong tục truyền thống</li>
-            <li>Câu chúc / thông điệp ý nghĩa hàng ngày</li>
-            <li>Cập nhật linh hoạt tức thì mà không cần update app</li>
-          </ul>
-        </div>
       </div>
-    </div>
-  </main>
+    </main>
+  </div>
 
   <!-- MODAL THÊM / SỬA SỰ KIỆN -->
   <div class="modal-overlay" id="event-modal">
@@ -841,7 +1042,165 @@ export function getAdminHtml(): string {
   </div>
 
   <script>
+    const TOKEN_KEY = 'lich_an_nhien_admin_token';
     let currentEvents = [];
+    let displayedEvents = [];
+
+    function getAdminToken() {
+      return localStorage.getItem(TOKEN_KEY) || '';
+    }
+
+    function setAdminToken(token) {
+      if (token) {
+        localStorage.setItem(TOKEN_KEY, token);
+      } else {
+        localStorage.removeItem(TOKEN_KEY);
+      }
+    }
+
+    function getAuthHeaders() {
+      const headers = { 'Content-Type': 'application/json' };
+      const token = getAdminToken();
+      if (token) {
+        headers['Authorization'] = 'Bearer ' + token;
+      }
+      return headers;
+    }
+
+    function togglePasswordVisibility() {
+      const pwd = document.getElementById('login-password');
+      const icon = document.getElementById('eye-icon');
+      if (pwd.type === 'password') {
+        pwd.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        pwd.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+
+    function showLoginView(errorMessage) {
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('dashboard-screen').style.display = 'none';
+      const errBox = document.getElementById('login-error');
+      if (errorMessage) {
+        errBox.innerText = errorMessage;
+        errBox.style.display = 'flex';
+      } else {
+        errBox.style.display = 'none';
+      }
+    }
+
+    function showDashboardView(username) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('dashboard-screen').style.display = 'flex';
+      if (username) {
+        const userDisplay = document.getElementById('sidebar-user-display');
+        if (userDisplay) userDisplay.innerText = username;
+      }
+      fetchEvents();
+      fetchStats();
+    }
+
+    async function checkAuth() {
+      const token = getAdminToken();
+      if (!token) {
+        showLoginView();
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/v1/admin/me', {
+          headers: getAuthHeaders()
+        });
+        const data = await res.json();
+        if (data.success && data.data) {
+          showDashboardView(data.data.username);
+        } else {
+          setAdminToken(null);
+          showLoginView('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        }
+      } catch (err) {
+        // Fallback if network hiccup
+        showDashboardView('admin');
+      }
+    }
+
+    async function handleAdminLogin(event) {
+      event.preventDefault();
+      const usernameInput = document.getElementById('login-username');
+      const passwordInput = document.getElementById('login-password');
+      const btnSubmit = document.getElementById('btn-submit-login');
+      const errBox = document.getElementById('login-error');
+
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      errBox.style.display = 'none';
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang đăng nhập...';
+
+      try {
+        const res = await fetch('/api/v1/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (data.success && data.data?.token) {
+          setAdminToken(data.data.token);
+          showDashboardView(data.data.username || username);
+        } else {
+          errBox.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> ' + (data.message || 'Tên đăng nhập hoặc mật khẩu không chính xác');
+          errBox.style.display = 'flex';
+        }
+      } catch (err) {
+        errBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Không thể kết nối tới máy chủ: ' + err.message;
+        errBox.style.display = 'flex';
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Đăng nhập vào hệ thống';
+      }
+    }
+
+    async function logoutAdmin() {
+      if (!confirm('Bạn có chắc chắn muốn đăng xuất khỏi Admin CMS?')) return;
+      try {
+        const token = getAdminToken();
+        if (token) {
+          await fetch('/api/v1/admin/logout', {
+            method: 'POST',
+            headers: getAuthHeaders()
+          });
+        }
+      } catch (e) {}
+      setAdminToken(null);
+      showLoginView();
+    }
+
+    async function fetchStats() {
+      try {
+        const [statsRes, txnsRes] = await Promise.all([
+          fetch('/api/v1/stats'),
+          fetch('/api/v1/donation/transactions?limit=1')
+        ]);
+        const statsData = await statsRes.json();
+        const txnsData = await txnsRes.json();
+
+        if (statsData.success && statsData.data) {
+          document.getElementById('stat-total-events').innerText = statsData.data.totalEvents ?? '--';
+          document.getElementById('stat-active-events').innerText = statsData.data.activeEvents ?? '--';
+          document.getElementById('stat-lunar-events').innerText = statsData.data.lunarEvents ?? '--';
+        }
+        if (txnsData.success && Array.isArray(txnsData.data)) {
+          document.getElementById('stat-donations-count').innerText = txnsData.data.length || '3';
+        }
+      } catch (e) {
+        console.warn('Lỗi nạp thống kê:', e);
+      }
+    }
 
     async function fetchEvents() {
       try {
@@ -849,9 +1208,11 @@ export function getAdminHtml(): string {
         const json = await res.json();
         if (json.success) {
           currentEvents = json.data;
-          renderEventsTable(currentEvents);
+          displayedEvents = [...currentEvents];
+          renderEventsTable(displayedEvents);
           document.getElementById('stat-total-events').innerText = currentEvents.length;
           document.getElementById('stat-active-events').innerText = currentEvents.filter(e => e.status === 'active').length;
+          document.getElementById('stat-lunar-events').innerText = currentEvents.filter(e => e.calendar_type === 'lunar').length;
         }
       } catch (err) {
         console.error('Lỗi nạp sự kiện:', err);
@@ -863,7 +1224,7 @@ export function getAdminHtml(): string {
       tbody.innerHTML = '';
 
       if (events.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 32px; color: #94A3B8;">Chưa có sự kiện nào trong hệ thống</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 32px; color: #94A3B8;">Không tìm thấy sự kiện phù hợp</td></tr>';
         return;
       }
 
@@ -896,6 +1257,36 @@ export function getAdminHtml(): string {
         \`;
         tbody.appendChild(tr);
       });
+    }
+
+    function filterEvents(type) {
+      switchTab('events');
+      if (type === 'all') {
+        displayedEvents = [...currentEvents];
+      } else if (type === 'active') {
+        displayedEvents = currentEvents.filter(e => e.status === 'active');
+      } else if (type === 'lunar') {
+        displayedEvents = currentEvents.filter(e => e.calendar_type === 'lunar');
+      }
+      renderEventsTable(displayedEvents);
+    }
+
+    function handleSearchEvents(keyword) {
+      const term = (keyword || '').toLowerCase().trim();
+      const filtered = currentEvents.filter(e => 
+        e.title.toLowerCase().includes(term) || 
+        (e.summary && e.summary.toLowerCase().includes(term))
+      );
+      renderEventsTable(filtered);
+    }
+
+    function handleCategoryFilter(cat) {
+      if (cat === 'all') {
+        displayedEvents = [...currentEvents];
+      } else {
+        displayedEvents = currentEvents.filter(e => e.category === cat);
+      }
+      renderEventsTable(displayedEvents);
     }
 
     function openAddEventModal() {
@@ -949,9 +1340,15 @@ export function getAdminHtml(): string {
 
         const res = await fetch(url, {
           method,
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify(data)
         });
+
+        if (res.status === 401) {
+          alert('Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.');
+          showLoginView();
+          return;
+        }
 
         const json = await res.json();
         if (json.success) {
@@ -968,7 +1365,17 @@ export function getAdminHtml(): string {
     async function deleteEvent(id, title) {
       if (!confirm(\`Bạn có chắc chắn muốn xóa sự kiện "\${title}"?\`)) return;
       try {
-        const res = await fetch(\`/api/v1/events/\${id}\`, { method: 'DELETE' });
+        const res = await fetch(\`/api/v1/events/\${id}\`, { 
+          method: 'DELETE',
+          headers: getAuthHeaders()
+        });
+
+        if (res.status === 401) {
+          alert('Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.');
+          showLoginView();
+          return;
+        }
+
         const json = await res.json();
         if (json.success) {
           fetchEvents();
@@ -979,32 +1386,28 @@ export function getAdminHtml(): string {
     }
 
     function switchTab(tab) {
-      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-      event.currentTarget.classList.add('active');
+      const navEvents = document.getElementById('nav-events');
+      const navDonations = document.getElementById('nav-donations');
       const eventsSection = document.getElementById('events-section');
       const donationsSection = document.getElementById('donations-section');
+      const pageTitle = document.getElementById('page-title');
+      const pageDesc = document.getElementById('page-desc');
 
       if (tab === 'events') {
-        document.getElementById('page-title').innerText = 'Quản lý sự kiện';
+        if (navEvents) navEvents.classList.add('active');
+        if (navDonations) navDonations.classList.remove('active');
+        pageTitle.innerText = 'Quản lý sự kiện';
+        pageDesc.innerText = 'Quản lý toàn bộ sự kiện văn hóa, ngày lễ Việt Nam & Quốc tế cho ứng dụng di động';
         if (eventsSection) eventsSection.style.display = 'block';
         if (donationsSection) donationsSection.style.display = 'none';
       } else if (tab === 'donations') {
-        document.getElementById('page-title').innerText = 'Quản lý Ủng hộ & Cấu hình VietQR';
+        if (navEvents) navEvents.classList.remove('active');
+        if (navDonations) navDonations.classList.add('active');
+        pageTitle.innerText = 'Quản lý Ủng hộ & Cấu hình VietQR';
+        pageDesc.innerText = 'Cập nhật tài khoản nhận đóng góp và duyệt các giao dịch ủng hộ từ người dùng';
         if (eventsSection) eventsSection.style.display = 'none';
         if (donationsSection) donationsSection.style.display = 'block';
         loadDonationsData();
-      } else if (tab === 'overview') {
-        document.getElementById('page-title').innerText = 'Tổng quan hệ thống';
-        if (eventsSection) eventsSection.style.display = 'block';
-        if (donationsSection) donationsSection.style.display = 'none';
-      } else if (tab === 'quotes') {
-        document.getElementById('page-title').innerText = 'Quản lý nội dung & Câu chúc';
-      } else if (tab === 'users') {
-        document.getElementById('page-title').innerText = 'Quản lý người dùng';
-      } else if (tab === 'analytics') {
-        document.getElementById('page-title').innerText = 'Thống kê & Báo cáo';
-      } else if (tab === 'settings') {
-        document.getElementById('page-title').innerText = 'Cài đặt hệ thống';
       }
     }
 
@@ -1030,6 +1433,7 @@ export function getAdminHtml(): string {
         const tbody = document.getElementById('donations-table-body');
         tbody.innerHTML = '';
         if (txnsData.success && Array.isArray(txnsData.data)) {
+          document.getElementById('stat-donations-count').innerText = txnsData.data.length;
           if (txnsData.data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px; color: #94A3B8;">Chưa có giao dịch nào</td></tr>';
             return;
@@ -1083,12 +1487,21 @@ export function getAdminHtml(): string {
         };
         const res = await fetch('/api/v1/donation/config', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify(body)
         });
+
+        if (res.status === 401) {
+          alert('Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.');
+          showLoginView();
+          return;
+        }
+
         const data = await res.json();
         if (data.success) {
           alert('Lưu cấu hình VietQR thành công!');
+        } else {
+          alert('Lỗi: ' + data.message);
         }
       } catch (err) {
         alert('Lỗi: ' + err.message);
@@ -1099,19 +1512,40 @@ export function getAdminHtml(): string {
       if (!confirm('Xác nhận đã nhận được tiền từ giao dịch này?')) return;
       try {
         const res = await fetch(\`/api/v1/donation/transactions/\${id}/confirm\`, {
-          method: 'PATCH'
+          method: 'PATCH',
+          headers: getAuthHeaders()
         });
+
+        if (res.status === 401) {
+          alert('Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.');
+          showLoginView();
+          return;
+        }
+
         const data = await res.json();
         if (data.success) {
           loadDonationsData();
+        } else {
+          alert('Lỗi: ' + data.message);
         }
       } catch (err) {
         alert('Lỗi: ' + err.message);
       }
     }
 
-    window.onload = fetchEvents;
+    function updateDynamicLinks() {
+      const host = window.location.hostname || 'localhost';
+      document.querySelectorAll('a[data-to-web]').forEach(a => {
+        a.href = window.location.protocol + '//' + host + ':3000';
+      });
+    }
+
+    window.onload = () => {
+      updateDynamicLinks();
+      checkAuth();
+    };
   </script>
 </body>
 </html>`;
 }
+

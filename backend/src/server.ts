@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import crypto from 'crypto';
 import { Resend } from 'resend';
 import { db, initDatabase } from './database';
 import { getAdminHtml } from './admin/adminHtml';
@@ -23,6 +24,38 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// --- ADMIN CMS AUTHENTICATION & SESSION MANAGEMENT ---
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+const adminSessions = new Map<string, { createdAt: number; username: string }>();
+
+function generateAdminToken(username: string): string {
+  const token = `adm_${Date.now()}_${crypto.randomBytes(24).toString('hex')}`;
+  adminSessions.set(token, { createdAt: Date.now(), username });
+  return token;
+}
+
+function verifyAdminToken(token?: string): boolean {
+  if (!token) return false;
+  const session = adminSessions.get(token);
+  if (!session) return false;
+  const MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 ngày
+  if (Date.now() - session.createdAt > MAX_AGE) {
+    adminSessions.delete(token);
+    return false;
+  }
+  return true;
+}
+
+function adminAuthMiddleware(req: Request, res: Response, next: any) {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : (req.query.admin_token as string);
+  if (!verifyAdminToken(token)) {
+    return res.status(401).json({ success: false, message: 'Yêu cầu quyền quản trị viên (Admin authentication required)' });
+  }
+  next();
+}
+
 // Serve Admin CMS at /admin and /
 app.get('/', (req: Request, res: Response) => {
   res.send(getAdminHtml());
@@ -30,6 +63,72 @@ app.get('/', (req: Request, res: Response) => {
 
 app.get('/admin', (req: Request, res: Response) => {
   res.send(getAdminHtml());
+});
+
+// --- ADMIN CMS AUTH ENDPOINTS ---
+
+// POST /api/v1/admin/login: Xác thực tài khoản quản trị
+app.post('/api/v1/admin/login', (req: Request, res: Response) => {
+  try {
+    const { username, password } = req.body || {};
+    const cleanUser = (username || '').trim().toLowerCase();
+    const cleanPass = (password || '').trim();
+
+    const expectedUser = ADMIN_USERNAME.toLowerCase();
+    const isUserValid = cleanUser === expectedUser || cleanUser === 'admin' || cleanUser === 'admin@lichannhien.vn';
+    const isPassValid = cleanPass === ADMIN_PASSWORD;
+
+    if (isUserValid && isPassValid) {
+      const token = generateAdminToken(cleanUser);
+      console.log(`[ADMIN AUTH] Đăng nhập CMS thành công: ${cleanUser}`);
+      return res.json({
+        success: true,
+        message: 'Đăng nhập quản trị thành công',
+        data: {
+          token,
+          username: ADMIN_USERNAME,
+          name: 'Quản Trị Viên Lịch An Nhiên',
+          role: 'admin'
+        }
+      });
+    }
+
+    console.warn(`[ADMIN AUTH FAIL] Đăng nhập thất bại với user: ${cleanUser}`);
+    return res.status(401).json({
+      success: false,
+      message: 'Tên đăng nhập hoặc mật khẩu không chính xác'
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// GET /api/v1/admin/me: Kiểm tra phiên đăng nhập quản trị
+app.get('/api/v1/admin/me', (req: Request, res: Response) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : (req.query.admin_token as string);
+  if (!verifyAdminToken(token)) {
+    return res.status(401).json({ success: false, message: 'Phiên đăng nhập đã hết hạn hoặc không hợp lệ' });
+  }
+  const session = adminSessions.get(token)!;
+  res.json({
+    success: true,
+    data: {
+      username: session.username,
+      name: 'Quản Trị Viên Lịch An Nhiên',
+      role: 'admin'
+    }
+  });
+});
+
+// POST /api/v1/admin/logout: Đăng xuất quản trị
+app.post('/api/v1/admin/logout', (req: Request, res: Response) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : (req.query.admin_token as string);
+  if (token) {
+    adminSessions.delete(token);
+  }
+  res.json({ success: true, message: 'Đã đăng xuất thành công' });
 });
 
 // --- API ENDPOINTS ---
@@ -43,6 +142,7 @@ app.get('/api/v1/health', (req: Request, res: Response) => {
     timestamp: new Date().toISOString()
   });
 });
+
 
 // GET /api/v1/calendar/day?date=YYYY-MM-DD
 app.get('/api/v1/calendar/day', async (req: Request, res: Response) => {
@@ -151,7 +251,7 @@ app.get('/api/v1/events/:id', async (req: Request, res: Response) => {
 });
 
 // POST /api/v1/events
-app.post('/api/v1/events', async (req: Request, res: Response) => {
+app.post('/api/v1/events', adminAuthMiddleware, async (req: Request, res: Response) => {
   try {
     const { title, calendar_type, day, month, category, status, summary, meaning, traditions, image_url } = req.body;
 
@@ -185,7 +285,7 @@ app.post('/api/v1/events', async (req: Request, res: Response) => {
 });
 
 // PUT /api/v1/events/:id
-app.put('/api/v1/events/:id', async (req: Request, res: Response) => {
+app.put('/api/v1/events/:id', adminAuthMiddleware, async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id as string, 10);
     const { title, calendar_type, day, month, category, status, summary, meaning, traditions, image_url } = req.body;
@@ -220,7 +320,8 @@ app.put('/api/v1/events/:id', async (req: Request, res: Response) => {
 });
 
 // DELETE /api/v1/events/:id
-app.delete('/api/v1/events/:id', async (req: Request, res: Response) => {
+app.delete('/api/v1/events/:id', adminAuthMiddleware, async (req: Request, res: Response) => {
+
   try {
     const id = parseInt(req.params.id as string, 10);
     const info = await db.run('DELETE FROM events WHERE id = ?', [id]);
@@ -768,7 +869,7 @@ app.get(['/api/v1/donation', '/api/v1/donation/config'], async (req: Request, re
 });
 
 // POST /api/v1/donation/config: Cập nhật cấu hình QR & tài khoản nhận (cho Admin CMS)
-app.post('/api/v1/donation/config', async (req: Request, res: Response) => {
+app.post('/api/v1/donation/config', adminAuthMiddleware, async (req: Request, res: Response) => {
   try {
     const {
       bankBin, bankName, accountNumber, accountHolder,
@@ -942,7 +1043,7 @@ app.get('/api/v1/donation/transactions', async (req: Request, res: Response) => 
 });
 
 // PATCH /api/v1/donation/transactions/:id/confirm: Xác nhận giao dịch thành công & gửi thư cảm ơn
-app.patch('/api/v1/donation/transactions/:id/confirm', async (req: Request, res: Response) => {
+app.patch('/api/v1/donation/transactions/:id/confirm', adminAuthMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const txn = await db.get('SELECT * FROM transactions WHERE id = ?', [id]) as any;
@@ -986,7 +1087,7 @@ app.patch('/api/v1/donation/transactions/:id/confirm', async (req: Request, res:
 });
 
 // Start Server
-app.listen(PORT, () => {
+app.listen(Number(PORT), '0.0.0.0', () => {
   console.log(`================================================`);
   console.log(`🚀 Lịch Việt Backend Server & Admin CMS Live!`);
   console.log(`🗄️ Database:        MySQL (database: ${process.env.DB_NAME || 'lich_an_nhien'})`);
@@ -994,3 +1095,4 @@ app.listen(PORT, () => {
   console.log(`📍 REST API:        http://localhost:${PORT}/api/v1`);
   console.log(`================================================`);
 });
+

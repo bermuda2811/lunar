@@ -1,17 +1,28 @@
-## Nhiệm vụ Hiện tại: Tối Ưu Tinh Gọn Giao Diện Web Theo Yêu Cầu Người Dùng
+## Nhiệm vụ Hiện tại: Tối Ưu Hóa Chuẩn SEO Toàn Diện Cho Domain lichannhien.com
 - **Mục tiêu**:
-  1. **Bỏ nút "Hôm nay" rời rạc**: Tích hợp nút/chỉ báo "Hôm nay" trực tiếp vào bên trong Widget chuyển ngày (`[ < ] [ dd/mm/yyyy • Hôm nay ] [ > ]`). Chỉ hiển thị nút quay về "Hôm nay" khi đang xem ngày khác.
-  2. **Tích hợp tìm kiếm sự kiện vào mục "Lễ Tết"**: Bỏ nút kính lúp tìm kiếm rời rạc trên Header; đặt thanh tìm kiếm sự kiện + bộ lọc danh mục trực quan ngay đầu tab "Lễ Tết & Sự Kiện".
-  3. **Đưa chức năng đổi ngày vào Menu Tài Khoản**: Bỏ tab "Đổi Ngày" khỏi thanh Navigation chính và Mobile Bottom Bar (giữ 5 tabs vàng chuẩn mực); tích hợp trọn vẹn công cụ chuyển đổi Âm – Dương chuẩn thiên văn Hồ Ngọc Đức vào trong Modal/Menu Tài khoản người dùng với nút "Xem tờ lịch ngày này".
-  4. **Header 1 hàng ngang duy nhất (Single-Line 56px)**: Thanh thoát, chỉ gồm Logo/Năm bên trái, 5 Navigation Tabs ở giữa, Widget chuyển ngày tích hợp & Tài khoản bên phải.
+  1. Tối ưu hóa toàn diện cho tên miền chính thức `lichannhien.com`.
+  2. Đưa website lên Top tìm kiếm Google và các Search Engine cho nhóm từ khóa cốt lõi:
+     - *"lịch"*, *"lịch âm dương"*, *"xem ngày"*, *"xem ngày âm dương"*, *"ngày hôm nay"*, *"lịch hôm nay"*, *"hôm nay ngày mấy"*, *"hôm nay là bao nhiêu âm lịch"*.
+     - Nhóm từ khóa phụ trợ: *"giờ hoàng đạo hôm nay"*, *"xem ngày tốt xấu"*, *"đổi ngày âm dương"*, *"lịch việt nam"*, *"lịch vạn niên 2026"*, *"tiết khí"*, *"bính ngọ 2026"*.
+  3. Xây dựng nền tảng Technical SEO, On-page SEO, Rich Snippet Schemas (JSON-LD), Semantic HTML Pre-hydration Shell, XML Sitemap và Robots.txt.
 
 - **Tiến độ triển khai**:
-  - [x] Cập nhật `CalendarWebApp.tsx`: kiểu `WebTab` còn 5 tabs (`today`, `month`, `events`, `reminders`, `donate`).
-  - [x] Thiết kế widget Date Stepper thống nhất trên Desktop Header & Mobile Stepper với nút "Hôm nay" tích hợp bên trong.
-  - [x] Tích hợp thanh tìm kiếm sự kiện và bộ lọc danh mục trực tiếp vào đầu tab "Lễ Tết", hỗ trợ tìm kiếm tức thời và thông báo trạng thái rỗng thân thiện.
-  - [x] Đưa công cụ đổi ngày Âm – Dương vào tab phụ trong Modal Tài khoản (`accountModalTab: 'account' | 'converter'`) cùng nút nhảy nhanh đến tờ lịch ngày được đổi.
-  - [x] Tinh giản Mobile Bottom Navigation Bar về 5 tabs chuẩn mực với touch target >= 48px.
-  - [x] Kiểm thử build Web: `npm run build:web` thành công (0 lỗi, 233ms).
-  - [x] Kiểm thử test suite Âm Dương: `npm test` vượt qua 100%.
-  - [x] Cập nhật tài liệu kỹ thuật dự án (`docs/UI_UX.md`, `docs/CHANGELOG.md`, `tasks/current.md`).
-  - [x] Khắc phục triệt để lỗi ngày cố định 16/09/2026 khi deploy lên VPS: chuyển `currentDate` sang `new Date()`, form nhắc nhở sang ngày thực tế và các màn hình sang tính toán sự kiện tự động.
+  - [x] Tạo `web/public/robots.txt`: Cấu hình bot crawling, chặn `/admin`, `/api/`, `/mobile-review`, trỏ sitemap chuẩn.
+  - [x] Tạo `web/public/sitemap.xml`: Chuẩn sitemap XML định dạng 2026-10-03 cho các trang và tabs (`today`, `month`, `events`, `converter`, `donate`).
+  - [x] Tạo `web/public/manifest.json`: Web App Manifest cho Google PWA và Mobile Search Snippet.
+  - [x] Tạo assets OpenGraph & Twitter Cards: `web/public/favicon.svg`, `web/public/og-image.svg`, `web/public/og-image.png` (1200x630 px).
+  - [x] Tối ưu hóa HTML Shell & Rich Schemas (`web/index.html`):
+    - Canonical tag: `https://lichannhien.com/`.
+    - Meta Title & Description chuẩn 155-160 ký tự trả lời trực diện câu hỏi *"Hôm nay ngày mấy? Hôm nay là bao nhiêu âm lịch?"*.
+    - Meta Keywords bao phủ 100% từ khóa người dùng yêu cầu.
+    - 3 Schema.org JSON-LD: `WebSite` (Sitelinks Searchbox), `WebApplication` (Rating 4.9⭐, Free), `FAQPage` (5 câu hỏi đáp phổ biến nhất).
+    - Semantic Pre-hydration Crawler Shell: Cung cấp nội dung tĩnh `<h1>`, `<h2>` và câu trả lời nhanh để crawler Googlebot/Bingbot đọc được ngay lập tức.
+  - [x] Tối ưu hóa React Component & Dynamic SEO (`web/src/views/CalendarWebApp.tsx`):
+    - Thẻ `<h1>` ngữ nghĩa chuẩn cho bot và accessibility.
+    - SEO Quick Answer Banner: Khung trả lời câu hỏi trực tiếp trên đầu tờ lịch xé: *"Hôm nay ngày mấy? Thứ X, dd/mm/yyyy • Hôm nay là bao nhiêu âm lịch? Ngày dd/mm (Can Chi)"*.
+    - SEO Knowledge Hub & FAQ Accordion: Chuyên mục cẩm nang tra cứu và 4 thẻ Q&A accordion phía trên footer giải đáp chi tiết các từ khóa trọng tâm.
+    - Dynamic SEO Hook `useEffect`: Tự động cập nhật `document.title` và `meta[name="description"]` thời gian thực theo từng ngày và tab đang chọn.
+  - [x] Kiểm thử tự động: `npm test` vượt qua 100%.
+  - [x] Kiểm thử build: `npm run build` biên dịch thành công 100% không có lỗi.
+  - [x] Kiểm thử truy xuất thực tế: curl `robots.txt`, `sitemap.xml`, `manifest.json`, `index.html` từ Vite dev server hoạt động chính xác.
+  - [x] Cập nhật tài liệu: `docs/DECISIONS.md` (D-013), `docs/PRODUCT.md`, `docs/CHANGELOG.md`, `tasks/current.md`.

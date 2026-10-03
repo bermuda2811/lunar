@@ -47,7 +47,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
       }
 
       const cleanEmail = promptEmail.trim().toLowerCase();
-      const res = await fetch('http://localhost:4000/api/v1/auth/google', {
+      const res = await fetch('/api/v1/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -85,7 +85,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
 
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:4000/api/v1/auth/send-otp', {
+      const res = await fetch('/api/v1/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail }),
@@ -139,7 +139,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
       };
 
       try {
-        const res = await fetch('http://localhost:4000/api/v1/auth/verify-otp', {
+        const res = await fetch('/api/v1/auth/verify-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

@@ -1,0 +1,18 @@
+{
+  "name": "Lịch An Nhiên — Lịch Âm Dương & Lịch Vạn Niên",
+  "short_name": "Lịch An Nhiên",
+  "description": "Tra cứu hôm nay ngày mấy, xem lịch âm dương, ngày tốt xấu, giờ hoàng đạo hôm nay chuẩn thiên văn.",
+  "start_url": "https://lichannhien.com/",
+  "display": "standalone",
+  "background_color": "#FAF8F5",
+  "theme_color": "#B3261E",
+  "lang": "vi",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -110,7 +110,7 @@ export const MobileReviewView: React.FC<MobileReviewViewProps> = ({
 
           {/* Direct link to Screen 11: Backend Admin CMS */}
           <a
-            href="http://localhost:4000/admin"
+            href={typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:4000/admin` : 'http://localhost:4000/admin'}
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#B3261E] text-white shadow-md shadow-red-900/40 hover:bg-[#8B1D1D] transition-all"
@@ -118,6 +118,7 @@ export const MobileReviewView: React.FC<MobileReviewViewProps> = ({
             <span>11. Mở Backend CMS</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
+
         </div>
       </header>
 

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+  
+  <!-- Trang chủ: Lịch Âm Dương Hôm Nay & Xem Ngày Tốt Xấu -->
+  <url>
+    <loc>https://lichannhien.com/</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Lịch Ngày Hôm Nay (Tờ lịch xé block bàn) -->
+  <url>
+    <loc>https://lichannhien.com/?tab=today</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Lịch Tháng Toàn Cảnh & Lịch Vạn Niên 2026 -->
+  <url>
+    <loc>https://lichannhien.com/?tab=month</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Bách Khoa Lễ Tết, Sự Kiện & Phong Tục Truyền Thống Việt Nam -->
+  <url>
+    <loc>https://lichannhien.com/?tab=events</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Công Cụ Đổi Ngày Âm Dương Chuẩn Thiên Văn Hồ Ngọc Đức -->
+  <url>
+    <loc>https://lichannhien.com/?tab=converter</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Trang Ủng Hộ & Tri Ân VietQR -->
+  <url>
+    <loc>https://lichannhien.com/?tab=donate</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+</urlset>

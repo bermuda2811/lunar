@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -22,8 +22,10 @@ import {
   ArrowRightLeft,
   BookOpen,
   Search,
-  CheckCircle2
+  CheckCircle2,
+  HelpCircle
 } from 'lucide-react';
+
 import { ReminderItem, AppSettings, UserAccount } from '../types';
 import {
   getFullDayData,
@@ -418,7 +420,48 @@ export const CalendarWebApp: React.FC<CalendarWebAppProps> = ({
     return items;
   }, [viewMonth, viewYear, day, month, year]);
 
+  // ==========================================
+  // DYNAMIC SEO METADATA (lichannhien.com)
+  // ==========================================
+  useEffect(() => {
+    let pageTitle = '';
+    let metaDescription = '';
+    const dateFormatted = `${day}/${month}/${year}`;
+    const lunarFormatted = `${dayData.lunar.day}/${dayData.lunar.month} Âm lịch (${dayData.lunar.yearName})`;
+
+    if (activeTab === 'today') {
+      if (isToday) {
+        pageTitle = `Hôm Nay Ngày Mấy? Lịch Âm Dương Hôm Nay ${dateFormatted} (${dayData.lunar.day}/${dayData.lunar.month} Âm) | Lịch An Nhiên`;
+        metaDescription = `Hôm nay ngày mấy? Hôm nay là ngày ${dateFormatted} Dương lịch, tức ngày ${lunarFormatted}. Ngày ${dayData.canChi.day}, ${dayData.rating.label}, Tiết khí ${dayData.tietKhi.name}. Tra cứu lịch âm dương, xem giờ hoàng đạo hôm nay chính xác 100% tại lichannhien.com.`;
+      } else {
+        pageTitle = `Lịch Âm Dương Ngày ${dateFormatted} (${dayData.lunar.day}/${dayData.lunar.month} Âm) — Xem Ngày Tốt Xấu | Lịch An Nhiên`;
+        metaDescription = `Tra cứu ngày ${dateFormatted} Dương lịch (tức ngày ${lunarFormatted}). Ngày ${dayData.canChi.day}, ${dayData.rating.label}, 12 giờ hoàng đạo và việc nên làm tại lichannhien.com.`;
+      }
+    } else if (activeTab === 'month') {
+      pageTitle = `Lịch Vạn Niên Tháng ${viewMonth}/${viewYear} — Xem Lịch Âm Dương Toàn Cảnh 2026 | Lịch An Nhiên`;
+      metaDescription = `Tra cứu bảng lịch vạn niên tháng ${viewMonth} năm ${viewYear} Dương lịch và Âm lịch Bính Ngọ 2026. Xem ngày hoàng đạo, ngày hắc đạo, ngày rằm mùng một chuẩn xác tại lichannhien.com.`;
+    } else if (activeTab === 'events') {
+      pageTitle = `Bách Khoa Lễ Tết & Sự Kiện Văn Hóa Việt Nam 2026 — Lịch An Nhiên`;
+      metaDescription = `Tra cứu danh sách các ngày lễ Tết cổ truyền, ngày kỷ niệm Việt Nam và Quốc tế trong năm 2026. Ý nghĩa văn hóa, phong tục tập quán truyền thống tại lichannhien.com.`;
+    } else if (activeTab === 'reminders') {
+      pageTitle = `Quản Lý Nhắc Nhở Cá Nhân, Ngày Giỗ & Sinh Nhật Gia Đình — Lịch An Nhiên`;
+      metaDescription = `Tạo và quản lý nhắc nhở ngày giỗ chạp, ngày rằm mùng một theo cả ngày Dương lịch và Âm lịch trên Lịch An Nhiên (lichannhien.com).`;
+    } else if (activeTab === 'donate') {
+      pageTitle = `Ủng Hộ & Đồng Hành Cùng Dự Án Lịch An Nhiên (lichannhien.com)`;
+      metaDescription = `Ủng hộ nhà phát triển duy trì ứng dụng Lịch An Nhiên hoàn toàn miễn phí, không quảng cáo quấy rầy. Quét mã VietQR nhanh chóng tại lichannhien.com.`;
+    }
+
+    if (pageTitle) {
+      document.title = pageTitle;
+    }
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc && metaDescription) {
+      metaDesc.setAttribute('content', metaDescription);
+    }
+  }, [day, month, year, viewMonth, viewYear, activeTab, isToday, dayData]);
+
   return (
+
     <div className="min-h-screen bg-[#FAF8F5] text-slate-800 flex flex-col font-sans selection:bg-red-100 selection:text-red-900 pb-20 md:pb-0">
       {/* =========================================================================
       {/* =========================================================================
@@ -433,13 +476,15 @@ export const CalendarWebApp: React.FC<CalendarWebAppProps> = ({
                 <span className="font-serif font-black text-base sm:text-lg tracking-tighter">L</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-serif font-bold text-base sm:text-lg text-slate-900 tracking-tight whitespace-nowrap">
-                  LỊCH AN NHIÊN
-                </span>
+                <h1 className="font-serif font-bold text-base sm:text-lg text-slate-900 tracking-tight whitespace-nowrap flex items-center gap-2 m-0 p-0">
+                  <span>LỊCH AN NHIÊN</span>
+                  <span className="sr-only"> — Lịch Âm Dương Hôm Nay, Xem Ngày Tốt Xấu & Lịch Vạn Niên 2026 (lichannhien.com)</span>
+                </h1>
                 <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider bg-red-50 text-[#B3261E] border border-red-200/80 px-2 py-0.5 rounded-full whitespace-nowrap">
                   Bính Ngọ 2026
                 </span>
               </div>
+
             </div>
 
             {/* Desktop Navigation Tabs (5 Tabs chuẩn, Chữ và icon trên 1 dòng) */}
@@ -577,9 +622,39 @@ export const CalendarWebApp: React.FC<CalendarWebAppProps> = ({
           MAIN BODY CONTAINER
       ========================================================================= */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        {/* SEO Quick Answer Banner for High Intent Search Queries (lichannhien.com) */}
+        {activeTab === 'today' && (
+          <div className="mb-4 sm:mb-5 px-3.5 sm:px-4 py-2.5 bg-gradient-to-r from-amber-50/90 via-white to-red-50/80 rounded-2xl border border-amber-200/70 flex flex-wrap items-center justify-between gap-2.5 text-xs text-slate-700 shadow-2xs">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <span className="px-2.5 py-0.5 rounded-full bg-[#B3261E] text-white font-extrabold text-[11px] shadow-xs">
+                {isToday ? 'Hôm Nay' : 'Ngày Đang Xem'}
+              </span>
+              <h2 className="font-bold text-slate-900 text-xs sm:text-sm inline-flex items-center gap-1.5 flex-wrap m-0 p-0">
+                <span className="text-slate-500 font-normal">Hôm nay ngày mấy?</span>
+                <span className="text-[#B3261E] font-black">{dayData.solar.dayOfWeek}, {day}/{month}/{year}</span>
+                <span className="text-slate-300">•</span>
+                <span className="text-slate-500 font-normal">Hôm nay là bao nhiêu âm lịch?</span>
+                <span className="text-[#8B1D1D] font-black font-serif">Ngày {dayData.lunar.day}/{dayData.lunar.month} ({dayData.canChi.day})</span>
+              </h2>
+            </div>
+            <div className="flex items-center gap-2 sm:gap-3 text-[11px] text-slate-600 font-medium">
+              <span className="inline-flex items-center gap-1">
+                <span className="text-slate-400">Tiết khí:</span>
+                <strong className="text-slate-900">{dayData.tietKhi.name}</strong>
+              </span>
+              <span className="text-slate-300">•</span>
+              <span className="inline-flex items-center gap-1 text-emerald-700 font-bold">
+                <Sparkles className="w-3 h-3 text-emerald-600" />
+                <span>{dayData.rating.label}</span>
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* TAB 1: TỜ LỊCH HÔM NAY (DESKTOP MULTI-COLUMN + RESPONSIVE MOBILE SINGLE COLUMN) */}
         {activeTab === 'today' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
             {/* COLUMN 1: TỜ LỊCH TREO TƯỜNG TRUYỀN THỐNG (lg:col-span-4) */}
             <div className="lg:col-span-4 flex flex-col gap-4">
               {/* Mobile Quick Date Stepper Bar (Thống nhất chuyển ngày và về hôm nay) */}
@@ -1507,6 +1582,133 @@ export const CalendarWebApp: React.FC<CalendarWebAppProps> = ({
       </main>
 
       {/* =========================================================================
+          SEO KNOWLEDGE HUB & TRA CỨU HỎI ĐÁP PHỔ BIẾN (lichannhien.com)
+      ========================================================================= */}
+      <section
+        aria-labelledby="seo-faq-heading"
+        className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 mt-8 mb-4"
+      >
+        <div className="bg-white rounded-3xl border border-amber-200/70 p-6 sm:p-8 shadow-xs">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 text-[#B3261E] border border-red-200 text-xs font-bold mb-2">
+                <HelpCircle className="w-3.5 h-3.5" />
+                <span>Cẩm Nang Tra Cứu Lịch Âm Dương lichannhien.com</span>
+              </div>
+              <h2 id="seo-faq-heading" className="text-xl sm:text-2xl font-black font-serif text-slate-900">
+                Hỏi Đáp Tra Cứu Lịch, Xem Ngày &amp; Giờ Hoàng Đạo
+              </h2>
+              <p className="text-sm text-slate-600 mt-1">
+                Giải đáp nhanh các thắc mắc hôm nay ngày mấy, hôm nay là bao nhiêu âm lịch, xem ngày tốt xấu và lịch vạn niên 2026.
+              </p>
+            </div>
+
+            {/* Quick Topic Badges */}
+            <div className="flex flex-wrap gap-1.5 self-start md:self-center">
+              <button
+                onClick={() => setActiveTab('today')}
+                className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-red-50 hover:text-[#B3261E] text-slate-600 border border-slate-200 text-xs font-semibold transition-all cursor-pointer"
+              >
+                #LịchHômNay
+              </button>
+              <button
+                onClick={() => setActiveTab('month')}
+                className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-red-50 hover:text-[#B3261E] text-slate-600 border border-slate-200 text-xs font-semibold transition-all cursor-pointer"
+              >
+                #LịchÂmDương2026
+              </button>
+              <button
+                onClick={() => {
+                  setAccountModalTab('converter');
+                  setIsAuthModalOpen(true);
+                }}
+                className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-red-50 hover:text-[#B3261E] text-slate-600 border border-slate-200 text-xs font-semibold transition-all cursor-pointer"
+              >
+                #ĐổiNgàyÂmDương
+              </button>
+              <button
+                onClick={() => setActiveTab('events')}
+                className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-red-50 hover:text-[#B3261E] text-slate-600 border border-slate-200 text-xs font-semibold transition-all cursor-pointer"
+              >
+                #LễTếtViệtNam
+              </button>
+            </div>
+          </div>
+
+          {/* FAQ Cards Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-6">
+            {/* Q1 */}
+            <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 sm:p-5 transition-all hover:border-amber-300">
+              <h3 className="text-base font-bold text-slate-900 mb-2 flex items-start gap-2">
+                <span className="text-[#B3261E] font-serif font-black text-lg leading-none">Q1.</span>
+                <span>Hôm nay là ngày bao nhiêu âm lịch và là thứ mấy?</span>
+              </h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Hôm nay là <strong>Thứ {dayData.solar.dayOfWeek}</strong>, ngày <strong>{day}/{month}/{year}</strong> Dương lịch, tương ứng ngày <strong>{dayData.lunar.day} tháng {dayData.lunar.month}</strong> năm <strong>{dayData.lunar.yearName}</strong> Âm lịch. Can Chi ngày hôm nay là <strong>{dayData.canChi.day}</strong>, tiết khí hiện tại là <strong>{dayData.tietKhi.name}</strong>. Mọi phép tính trên <em>lichannhien.com</em> đều áp dụng thuật toán thiên văn Hồ Ngọc Đức múi giờ chuẩn UTC+7.
+              </p>
+            </div>
+
+            {/* Q2 */}
+            <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 sm:p-5 transition-all hover:border-amber-300">
+              <h3 className="text-base font-bold text-slate-900 mb-2 flex items-start gap-2">
+                <span className="text-[#B3261E] font-serif font-black text-lg leading-none">Q2.</span>
+                <span>Xem ngày hôm nay là ngày tốt hay xấu, hoàng đạo hay hắc đạo?</span>
+              </h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Ngày hôm nay được xếp loại: <strong className="text-emerald-700">{dayData.rating.label}</strong>. Các hoạt động thuận lợi nên làm bao gồm: <em>{dayData.rating.suitableFor.join(', ')}</em>. Các việc cần lưu ý kiêng cữ: <em>{dayData.rating.avoid.join(', ')}</em>. Bạn có thể theo dõi chi tiết cột phong thủy bên cạnh để đón cát tránh hung.
+              </p>
+            </div>
+
+            {/* Q3 */}
+            <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 sm:p-5 transition-all hover:border-amber-300">
+              <h3 className="text-base font-bold text-slate-900 mb-2 flex items-start gap-2">
+                <span className="text-[#B3261E] font-serif font-black text-lg leading-none">Q3.</span>
+                <span>Giờ hoàng đạo hôm nay gồm những khung giờ nào?</span>
+              </h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Trong 12 giờ Can Chi, 6 khung giờ Hoàng đạo cát lành ngày hôm nay gồm: <strong>{dayData.auspiciousHours.map(h => `${h.canChi} (${h.time})`).join(', ')}</strong>. Trên giao diện Lịch An Nhiên, khung giờ hoàng đạo đang diễn ra ở thời điểm hiện tại luôn được đánh dấu màu xanh nổi bật theo thời gian thực của máy tính.
+              </p>
+            </div>
+
+            {/* Q4 */}
+            <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 sm:p-5 transition-all hover:border-amber-300">
+              <h3 className="text-base font-bold text-slate-900 mb-2 flex items-start gap-2">
+                <span className="text-[#B3261E] font-serif font-black text-lg leading-none">Q4.</span>
+                <span>Làm sao để đổi ngày âm sang ngày dương hoặc ngược lại?</span>
+              </h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Bạn chỉ cần mở công cụ <strong>Đổi Ngày Âm – Dương</strong> trong menu Tài khoản hoặc bấm vào các nút chuyển đổi trên trang. Nhập ngày tháng năm cần tra cứu, hệ thống lập tức quy đổi 2 chiều và có nút bấm trực tiếp nhảy đến tờ lịch chi tiết của ngày đó mà không cần tính nhẩm.
+              </p>
+            </div>
+          </div>
+
+          {/* Rich Content Summary for Search Intent */}
+          <div className="mt-6 pt-6 border-t border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-600">
+            <div className="p-3.5 rounded-xl bg-amber-50/50 border border-amber-100">
+              <h4 className="font-bold text-slate-900 text-sm mb-1 text-[#B3261E]">Lịch Âm Dương Chuẩn Thiên Văn</h4>
+              <p className="leading-relaxed">
+                Cung cấp ngày Dương lịch, ngày Âm lịch Bính Ngọ 2026, Can Chi 4 trụ, Tiết khí 24 mùa và 12 giờ Hoàng đạo thời gian thực chính xác tuyệt đối.
+              </p>
+            </div>
+            <div className="p-3.5 rounded-xl bg-emerald-50/50 border border-emerald-100">
+              <h4 className="font-bold text-slate-900 text-sm mb-1 text-emerald-800">Tối Ưu Cho Người Cao Tuổi</h4>
+              <p className="leading-relaxed">
+                Chữ to rõ ràng, số ngày 96px+, độ tương phản cao đạt chuẩn WCAG AAA, giao diện thuần Việt ấm áp, hoàn toàn miễn phí và không quảng cáo quấy rầy.
+              </p>
+            </div>
+            <div className="p-3.5 rounded-xl bg-red-50/50 border border-red-100">
+              <h4 className="font-bold text-slate-900 text-sm mb-1 text-[#8B1D1D]">Bách Khoa Lễ Tết &amp; Nhắc Nhở</h4>
+              <p className="leading-relaxed">
+                Tra cứu nguồn gốc, ý nghĩa và phong tục các ngày lễ truyền thống; hỗ trợ quản lý nhắc ngày giỗ chạp, ngày rằm mùng một thông minh theo chu kỳ âm lịch.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      {/* =========================================================================
           FIXED MOBILE BOTTOM NAVIGATION BAR (5 Tabs cân đối & tối ưu touch target)
       ========================================================================= */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-amber-200/70 shadow-lg px-2 py-1.5 flex items-center justify-around">
@@ -1575,10 +1777,16 @@ export const CalendarWebApp: React.FC<CalendarWebAppProps> = ({
           </div>
           <div className="flex items-center gap-4 text-xs font-semibold text-slate-500">
             <span>Múi Giờ Việt Nam (UTC+7)</span>
-            <a href="http://localhost:4000/admin" target="_blank" rel="noreferrer" className="hover:text-[#B3261E]">
+            <a
+              href={typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:4000/admin` : 'http://localhost:4000/admin'}
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-[#B3261E]"
+            >
               Admin CMS
             </a>
           </div>
+
         </div>
       </footer>
 

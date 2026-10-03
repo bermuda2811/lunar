@@ -347,5 +347,14 @@ export async function initDatabase() {
     `);
   }
 
+  // Seed admin user if not exists
+  const [adminRows] = await pool.query("SELECT COUNT(*) as count FROM users WHERE role = 'admin'") as any;
+  if (adminRows[0].count === 0) {
+    await pool.query(`
+      INSERT INTO users (id, email, name, role, is_guest, auth_provider)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, ['admin_master', 'admin@lichannhien.vn', 'Quản Trị Viên', 'admin', 0, 'system']);
+  }
+
   console.log('✅ [MYSQL] Khởi tạo cơ sở dữ liệu MySQL lich_an_nhien thành công!');
 }
