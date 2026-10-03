@@ -18,7 +18,10 @@ export const AddReminderScreen: React.FC<AddReminderScreenProps> = ({
   const [calendarType, setCalendarType] = useState<'solar' | 'lunar' | 'both'>('both');
   const [dateStr, setDateStr] = useState(() => {
     const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   });
   const [repeat, setRepeat] = useState<'none' | 'daily' | 'weekly' | 'monthly' | 'yearly'>('yearly');
   const [time, setTime] = useState('all_day');

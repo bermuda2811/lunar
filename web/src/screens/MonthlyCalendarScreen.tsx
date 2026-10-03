@@ -91,9 +91,20 @@ export const MonthlyCalendarScreen: React.FC<MonthlyCalendarScreenProps> = ({
     const canChi = getCanChi(d, viewMonth, viewYear, lunar.year, lunar.month);
     const rating = getDayRating(canChi.dayChiIndex, (lunar.month + 1) % 12);
 
-    // Special event marks (mùng 1, rằm, các lễ hội lớn)
-    const isSpecialEvent = (lunar.day === 1) || (lunar.day === 15) || (lunar.month === 8 && lunar.day === 15) || (lunar.month === 3 && lunar.day === 10);
-    const isHoliday = (viewMonth === 9 && (d === 2 || d === 3)) || (viewMonth === 1 && d === 1) || (viewMonth === 4 && d === 30) || (viewMonth === 5 && d === 1) || (lunar.month === 1 && lunar.day <= 3);
+    // Holiday & special event marks
+    const isHoliday =
+      (viewMonth === 9 && (d === 2 || d === 3)) ||
+      (viewMonth === 1 && d === 1) ||
+      (viewMonth === 4 && d === 30) ||
+      (viewMonth === 5 && d === 1) ||
+      (lunar.month === 1 && (lunar.day === 1 || lunar.day === 2 || lunar.day === 3)) ||
+      (lunar.month === 3 && lunar.day === 10);
+
+    const isSpecialEvent =
+      isHoliday ||
+      lunar.day === 1 ||
+      lunar.day === 15 ||
+      (lunar.month === 8 && lunar.day === 15);
 
     cells.push({
       day: d,

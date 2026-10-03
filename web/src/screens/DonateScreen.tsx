@@ -147,6 +147,7 @@ export const DonateScreen: React.FC<DonateScreenProps> = ({ onNavigate }) => {
     setShowThankYouModal(true);
   };
 
+
   const tiers = [
     { amount: 10000, label: 'Tách trà ấm', icon: 'tea' },
     { amount: 30000, label: 'Ly cà phê', icon: 'coffee' },

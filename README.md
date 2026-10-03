@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# lunar
-=======
 # Lịch An Nhiên (Lịch Việt) — Giữ truyền thống, gần gũi mỗi ngày!
 
 Ứng dụng xem Lịch Dương, Lịch Âm, Giờ Hoàng Đạo, Sự Kiện Văn Hóa và Nhắc Nhở cá nhân tối ưu đặc biệt cho **Người cao tuổi** Việt Nam.

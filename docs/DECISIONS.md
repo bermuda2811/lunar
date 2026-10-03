@@ -138,8 +138,54 @@ Tài liệu này lưu trữ toàn bộ các Quyết định Kiến trúc (Archit
 - **Reason**: Tạo nên Header 56px (`h-14`) cực kỳ tinh gọn, thẩm mỹ cao, không bị tràn dòng, đồng thời sắp xếp các tính năng chuyên biệt (tra cứu lễ hội, đổi ngày) vào đúng ngữ cảnh tự nhiên nhất cho người dùng.
 
 ---
+## D-012: Xác Thực Bảo Mật Đăng Nhập Admin CMS & Tinh Giản Nội Dung Có Gắn Link
+- **Date**: 2026-10-02
+- **Status**: ACTIVE
+- **Context**: Người dùng yêu cầu Admin CMS phải đăng nhập mới vào được (không để truy cập tự do), đồng thời trong Admin CMS cần lược bỏ toàn bộ các nội dung không gắn link (loại bỏ khung ghi chú tĩnh wireframe và các tab menu không có liên kết/chức năng).
+- **Decision**:
+  1. **Bảo mật Đăng nhập Admin CMS**:
+     - Thiết lập màn hình Đăng nhập Quản Trị (`#login-screen`) khi truy cập `/admin`.
+     - Tài khoản quản trị mặc định: `admin` (hoặc `admin@lichannhien.vn`), Mật khẩu: `admin123`.
+     - Quản lý phiên làm việc thông qua Bearer Token bảo mật (`/api/v1/admin/login`, `/api/v1/admin/me`, `/api/v1/admin/logout`).
+     - Tự động bảo vệ các API quản trị (`POST/PUT/DELETE /events`, `POST /donation/config`, `PATCH /donation/transactions/:id/confirm`) với `adminAuthMiddleware`.
+  2. **Tinh Giản Nội Dung & Đảm Bảo 100% Gắn Link**:
+     - Lược bỏ hoàn toàn khối ghi chú tĩnh từ wireframe (`wireframe-info-box`) không có liên kết hay tương tác.
+     - Lược bỏ các tab menu không có link hoặc không có panel hoạt động (`quotes`, `users`, `analytics`, `settings`).
+     - Toàn bộ menu và thành phần còn lại đều là liên kết hoặc công cụ tương tác trực tiếp: Quản lý sự kiện, Quản lý ủng hộ VietQR, Mở Web Lịch App, Xem trạng thái REST API, và Dữ liệu JSON sự kiện.
+     - Các thẻ thống kê (Stats cards) đều hỗ trợ bấm nhảy nhanh và lọc dữ liệu tương ứng.
+- **Reason**: Đảm bảo an toàn tuyệt đối cho hệ thống dữ liệu, ngăn chặn truy cập trái phép, đồng thời biến Admin CMS thành một trang quản trị chuyên nghiệp, gọn gàng, 100% thành phần đều có link hoặc công năng thực tế.
 
-## D-012: Triển khai Domain Chính Thức http://lichannhien.com, Bỏ Domain Cũ và Làm Sạch Dữ Liệu Giao Dịch
+---
+
+## D-013: Kiến Trúc Tối Ưu Hóa SEO Toàn Diện Cho Domain lichannhien.com
+- **Date**: 2026-10-03
+- **Status**: ACTIVE
+- **Context**: Người dùng chỉ định tên miền chính thức của dự án là `lichannhien.com` và yêu cầu thiết kế chuẩn SEO để dễ dàng lên top search các công cụ tìm kiếm liên quan đến lịch, lịch âm dương, xem ngày, xem ngày âm dương, ngày hôm nay, lịch hôm nay, hôm nay ngày mấy, hôm nay là bao nhiêu âm lịch và các từ khóa phụ trợ (giờ hoàng đạo hôm nay, xem ngày tốt xấu, đổi ngày âm dương, lịch vạn niên 2026, tiết khí...).
+- **Decision**:
+  1. **Assets & Technical SEO**:
+     - `web/public/robots.txt`: Cho phép bot crawl toàn bộ trang chính, chặn `/admin`, `/api/`, `/mobile-review`, khai báo Host chuẩn và Sitemap `https://lichannhien.com/sitemap.xml`.
+     - `web/public/sitemap.xml`: Chuẩn XML sitemap định dạng 2026-10-03 cho các trang và tabs: Home, Today, Month, Events, Converter, Donate.
+     - `web/public/manifest.json`: Web App Manifest cho PWA và mobile Google snippet.
+     - `web/public/favicon.svg` và `og-image.png` (1200x630 px) chuẩn OpenGraph/Twitter Cards.
+  2. **Semantic Pre-hydration Crawler Shell & Rich Schemas (`web/index.html`)**:
+     - Canonical tag: `https://lichannhien.com/`.
+     - Meta Title & Description chuẩn 155-160 ký tự trả lời trực diện câu hỏi *"Hôm nay ngày mấy? Hôm nay là bao nhiêu âm lịch?"*.
+     - Meta Keywords bao phủ 100% danh sách từ khóa người dùng yêu cầu.
+     - Tích hợp 3 Schema.org JSON-LD:
+       - `WebSite` với SearchAction (Google Sitelinks Searchbox).
+       - `WebApplication` xếp hạng 4.9 sao, danh mục UtilitiesApplication, giá Miễn phí.
+       - `FAQPage` trả lời 5 câu hỏi vàng có search volume cao nhất về xem ngày, đổi ngày, giờ hoàng đạo.
+     - Semantic Pre-hydration Crawler Shell: Khung HTML tĩnh chứa `<h1>`, `<h2>`, câu trả lời nhanh để crawler Googlebot/Bingbot index tức thì trước khi React hydrate.
+  3. **Tối ưu Hóa React Component & Dynamic SEO (`CalendarWebApp.tsx`)**:
+     - Dynamic SEO Hook `useEffect`: Tự động cập nhật `document.title` và `meta[name="description"]` thời gian thực theo từng ngày và từng tab được chọn.
+     - Header `<h1>`: Thẻ `<h1>` ngữ nghĩa chuẩn cho bot và trình đọc màn hình.
+     - **SEO Quick Answer Banner**: Khung trả lời câu hỏi trực tiếp trên đầu tờ lịch xé: *"Hôm nay ngày mấy? Thứ X, dd/mm/yyyy • Hôm nay là bao nhiêu âm lịch? Ngày dd/mm (Can Chi)"*.
+     - **SEO Knowledge Hub & FAQ Section**: Chuyên mục cẩm nang tra cứu và 4 thẻ Q&A accordion phía trên footer giải đáp chi tiết các từ khóa trọng tâm.
+- **Reason**: Đáp ứng trọn vẹn thuật toán Google Search Quality Rater và Search Intent của người dùng tìm kiếm về lịch Việt Nam, tối ưu Core Web Vitals, mang lại khả năng index tức thì và hiển thị Rich Snippets (FAQ Accordion, Site Search, Rating Stars) nổi bật trên Google SERP.
+
+---
+
+## D-014: Triển khai Domain Chính Thức http://lichannhien.com, Bỏ Domain Cũ và Làm Sạch Dữ Liệu Giao Dịch
 - **Date**: 2026-10-03
 - **Status**: ACTIVE
 - **Context**: Ứng dụng Lịch An Nhiên bước vào giai đoạn triển khai production thực tế. Cần cấu hình tên miền chính thức `http://lichannhien.com` (và `www.lichannhien.com`), loại bỏ hoàn toàn việc phục vụ trên tên miền thử nghiệm cũ (`luna.1988.vn` và đường dẫn `/luna`), đồng thời làm sạch toàn bộ dữ liệu giao dịch mẫu (seed/test transactions) trong cơ sở dữ liệu `luna` để sẵn sàng đón nhận giao dịch ủng hộ thật từ cộng đồng, trong khi bảo toàn 100% dữ liệu danh mục ngày lễ, sự kiện văn hóa, câu chúc và cấu hình hệ thống.
@@ -160,7 +206,7 @@ Tài liệu này lưu trữ toàn bộ các Quyết định Kiến trúc (Archit
      - Build image Docker production mới (Version 1.1.0) tích hợp cả Web Frontend (React + Vite) và Backend REST API + Admin CMS trên cổng 4000 (ánh xạ 8087 trên host).
 ---
 
-## D-013: Hiệu Chuẩn Toàn Diện Thuật Toán Âm Dương Lịch và Đồng Bộ Trải Nghiệm Ngày Thực Tế
+## D-015: Hiệu Chuẩn Toàn Diện Thuật Toán Âm Dương Lịch và Đồng Bộ Trải Nghiệm Ngày Thực Tế
 - **Date**: 2026-10-03
 - **Status**: ACTIVE
 - **Context**: Khi người dùng truy cập `http://lichannhien.com`, ứng dụng trước đây luôn hiển thị ngày 16/9/2026 (ngày hardcode từ bản demo wireframe) thay vì ngày hôm nay thực tế. Đồng thời, thuật toán tính Âm lịch có sai lệch trong việc xác định năm âm lịch cho các ngày đầu năm dương lịch trước Tết (tháng 1 & tháng 2), lỗi tham chiếu tháng nhuận `lunarToSolar`, và sai lệch độ dời sao Hoàng đạo / Hắc đạo trong `getDayRating`.
@@ -177,8 +223,4 @@ Tài liệu này lưu trữ toàn bộ các Quyết định Kiến trúc (Archit
      - Bộ chọn ngày nhắc nhở mới mặc định theo ngày thực tế.
   4. **Kiểm thử tự động**: Xây dựng bộ test `testCalendar.ts` kiểm thử các mốc chuyển giao năm, ngày Hoàng đạo và chuyển đổi 2 chiều đạt 100% độ chính xác.
 - **Reason**: Đảm bảo trải nghiệm trực quan chính xác từng ngày cho người dùng thực tế và độ tin cậy thiên văn tuyệt đối cho ứng dụng Lịch Việt.
-
-
-
-
 

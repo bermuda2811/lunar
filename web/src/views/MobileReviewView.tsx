@@ -118,6 +118,7 @@ export const MobileReviewView: React.FC<MobileReviewViewProps> = ({
             <span>11. Mở Backend CMS</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
+
         </div>
       </header>
 

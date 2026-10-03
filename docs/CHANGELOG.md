@@ -37,6 +37,47 @@ Mọi thay đổi đáng kể của dự án được ghi nhận tại file này
 ### Deployment
 - Đóng gói Docker image `luna_app` mới (Version 1.1.0) và khởi chạy an toàn trong cụm mạng `shared_net` kết nối MySQL `luna`.
 
+## [0.3.0] - 2026-10-03
+### Added
+- **Tối Ưu Hóa SEO Toàn Diện Cho Tên Miền Chính Thức `lichannhien.com`**:
+  - **Bao phủ 100% Từ Khóa Cốt Lõi**: *"lịch", "lịch âm dương", "xem ngày", "xem ngày âm dương", "ngày hôm nay", "lịch hôm nay", "hôm nay ngày mấy", "hôm nay là bao nhiêu âm lịch"*, kèm các từ khóa phụ trợ (*giờ hoàng đạo hôm nay, xem ngày tốt xấu, đổi ngày âm dương, lịch vạn niên 2026, tiết khí, bính ngọ 2026*).
+  - **Technical SEO Files**:
+    - `robots.txt`: Cấu hình cho phép bot index, disallow `/admin`, `/api/`, `/mobile-review`, trỏ sitemap chuẩn `https://lichannhien.com/sitemap.xml`.
+    - `sitemap.xml`: XML sitemap định dạng 2026-10-03 cho toàn bộ các trang và tabs (`today`, `month`, `events`, `converter`, `donate`).
+    - `manifest.json`: Web App Manifest cho Google Mobile App Snippet & PWA.
+    - `og-image.png` (1200x630 px) & `favicon.svg`: Đầy đủ ảnh thumbnail phục vụ OpenGraph (Facebook, Zalo) và Twitter Cards.
+  - **Semantic Pre-hydration Shell & Rich Schemas (`index.html`)**:
+    - Thẻ Canonical: `https://lichannhien.com/`.
+    - 3 Schema.org JSON-LD: `WebSite` (Google Sitelinks Searchbox), `WebApplication` (Rating 4.9⭐, Free), `FAQPage` (5 câu hỏi đáp có search volume cao nhất).
+    - Khung HTML tĩnh chứa `<h1>`, `<h2>` và câu trả lời nhanh để crawler Googlebot/Bingbot index ngay lập tức trước khi React hydrate.
+  - **Dynamic SEO & React Component (`CalendarWebApp.tsx`)**:
+    - Thẻ `<h1>` ngữ nghĩa duy nhất cho trang web.
+    - Dynamic SEO Title & Meta Description tự động cập nhật theo thời gian thực tương ứng với từng ngày và từng tab được xem.
+    - **SEO Quick Answer Banner**: Trả lời trực diện câu hỏi *"Hôm nay ngày mấy? Thứ X, dd/mm/yyyy • Hôm nay là bao nhiêu âm lịch? Ngày dd/mm (Can Chi)"* ngay trên đầu tờ lịch xé.
+    - **SEO Knowledge Hub & FAQ Accordion**: 4 khối hỏi đáp chi tiết giải quyết trọn vẹn search intent của người dùng về xem ngày, đổi ngày, giờ hoàng đạo và lịch vạn niên.
+
+## [0.2.9] - 2026-10-02
+### Added
+- **Xác Thực Đăng Nhập Quản Trị Viên Cho Admin CMS (`/admin`)**:
+  - Tích hợp giao diện màn hình Đăng nhập Quản Trị bảo mật cao, ngăn chặn truy cập tự do vào Backend CMS.
+  - Cung cấp tài khoản quản trị mặc định: Tên đăng nhập `admin` (hoặc `admin@lichannhien.vn`), Mật khẩu `admin123`.
+  - Triển khai bộ API xác thực phiên làm việc: `POST /api/v1/admin/login`, `GET /api/v1/admin/me`, `POST /api/v1/admin/logout` với Bearer Token.
+  - Bổ sung middleware `adminAuthMiddleware` bảo vệ toàn diện các endpoint sửa đổi dữ liệu (`POST/PUT/DELETE /api/v1/events`, `POST /api/v1/donation/config`, `PATCH /api/v1/donation/transactions/:id/confirm`).
+
+### Changed
+- **Lược Bỏ Nội Dung Không Gắn Link Trong Admin CMS**:
+  - Loại bỏ hoàn toàn khối ghi chú tĩnh (`wireframe-info-box`) sao chép từ wireframe vốn không có link hay tương tác.
+  - Tinh giản Sidebar, loại bỏ các mục menu không có link hoặc không có panel hoạt động (`quotes`, `users`, `analytics`, `settings`).
+  - Đảm bảo 100% các thành phần còn lại trong CMS đều có link hoặc công năng trực tiếp (Quản lý sự kiện, Quản lý ủng hộ VietQR, Mở Web Lịch App, Xem trạng thái REST API, Dữ liệu JSON sự kiện).
+  - Biến các thẻ Thống kê (Stats cards) thành các nút bấm điều hướng nhanh có hover effect trực quan.
+
+## [0.2.8] - 2026-10-02
+### Fixed
+- **Khắc Phục Khởi Tạo Ngày Cố Định (Hardcoded Date) Khi Deploy Lên VPS**:
+  - Chuyển đổi trạng thái khởi tạo `currentDate` tại [`web/src/App.tsx`](file:///home/trungnt/projects/calendar/web/src/App.tsx) từ ngày demo cố định `new Date(2026, 8, 16)` sang ngày thực tế của thiết bị `() => new Date()`.
+  - Cập nhật form tạo nhắc nhở [`AddReminderScreen.tsx`](file:///home/trungnt/projects/calendar/web/src/screens/AddReminderScreen.tsx) tự động điền ngày hiện tại (`YYYY-MM-DD`) thay vì ngày mẫu `2026-09-25`.
+  - Chuyển đổi toàn bộ danh sách sự kiện trong ngày tại [`DailyOverviewScreen.tsx`](file:///home/trungnt/projects/calendar/web/src/screens/DailyOverviewScreen.tsx), [`DailyDetailScreen.tsx`](file:///home/trungnt/projects/calendar/web/src/screens/DailyDetailScreen.tsx) và bộ lọc sự kiện tại [`MonthlyCalendarScreen.tsx`](file:///home/trungnt/projects/calendar/web/src/screens/MonthlyCalendarScreen.tsx), [`CalendarWebApp.tsx`](file:///home/trungnt/projects/calendar/web/src/views/CalendarWebApp.tsx) sang tính toán động theo chuẩn Lịch Âm - Dương thay vì so sánh cứng với tháng 9/2026.
+
 ## [0.2.7] - 2026-09-19
 ### Changed
 - **Tối Ưu Phân Bố Tính Năng & Tinh Gọn Giao Diện Web Theo Yêu Cầu**:

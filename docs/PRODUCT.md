@@ -115,14 +115,17 @@ Theo thiết kế chuẩn tại `wireframe.png`, ứng dụng gồm 11 màn hìn
 - Mục Hoạt động truyền thống: Các phong tục tập quán gắn liền với ngày lễ.
 
 ### 2.11. Backend & Admin Web CMS (Màn hình 11)
-- Giao diện web quản trị chuẩn:
-  - Sidebar: Logo "Lịch Việt", Tổng quan, Quản lý sự kiện (Active), Quản lý nội dung, Quản lý người dùng, Thống kê, Cài đặt.
+- **Bảo mật truy cập**: Bắt buộc đăng nhập tài khoản quản trị viên (`admin` / `admin123`) mới có thể truy cập hệ thống. Hỗ trợ xác thực phiên qua Bearer token và nút đăng xuất an toàn.
+- **Giao diện quản trị tinh gọn 100% có gắn link**:
+  - Sidebar: Logo thương hiệu gắn link về trang chủ, Tab "Quản lý sự kiện", Tab "Ủng hộ & VietQR", Link mở ứng dụng Web Lịch (`localhost:3000`), Link kiểm tra sức khỏe REST API (`/health`), và Link xem dữ liệu JSON sự kiện.
+  - Loại bỏ hoàn toàn các khối ghi chú tĩnh không có link từ wireframe và các menu không có chức năng thực tế.
   - Bảng danh sách sự kiện:
     - Cột: Ngày, Tên sự kiện, Loại, Trạng thái (Badge "Hiển thị"), Thao tác (Sửa, Xóa).
+    - Bộ lọc danh mục & ô tìm kiếm sự kiện tức thì.
     - Nút "+ Thêm sự kiện" đỏ nổi bật mở modal thêm/sửa sự kiện.
-  - Quản lý câu chúc theo ngày, nội dung ý nghĩa văn hóa.
-  - Thống kê lượt truy cập và nhắc nhở.
-  - Cung cấp REST API cho mobile app cập nhật nội dung tức thì không cần phát hành lại ứng dụng.
+  - Quản trị cấu hình nhận tiền VietQR động & duyệt danh sách ủng hộ.
+  - Thẻ thống kê tương tác: Bấm vào thẻ để chuyển nhanh đến phần quản lý hoặc lọc dữ liệu tương ứng.
+  - Cung cấp REST API bảo mật cho client app cập nhật nội dung tức thì không cần phát hành lại ứng dụng.
 
 ### 2.12. Quản lý Tài khoản, Đăng nhập Google & Resend Email OTP (Màn hình 12)
 - **Tài khoản khách tự động (Seamless Guest Account)**: Khi cài đặt/mở ứng dụng lần đầu, tự động tạo tài khoản ngầm, người dùng sử dụng ngay lập tức mà không gặp bất kỳ popup bắt buộc đăng nhập nào.
@@ -155,5 +158,24 @@ Theo thiết kế chuẩn tại `wireframe.png`, ứng dụng gồm 11 màn hìn
 - **Widget Chuyển Ngày Tích Hợp (Unified Date Stepper)**: Bỏ nút "Hôm nay" riêng lẻ; nút nhảy về hôm nay được đưa trực tiếp vào trong widget chuyển ngày, tự động ẩn/hiện thông minh khi người dùng xem ngày khác.
 - **Tìm Kiếm Sự Kiện Tích Hợp Vào Tab Lễ Tết**: Chuyển ô tìm kiếm và bộ lọc danh mục trực tiếp vào đầu tab "Lễ Tết & Sự Kiện", xóa bỏ nút tìm kiếm rời rạc trên Header.
 - **Công Cụ Đổi Ngày Âm – Dương Trong Menu Tài Khoản**: Chuyển bộ chuyển đổi thiên văn Hồ Ngọc Đức vào modal/menu Tài khoản (`accountModalTab`), giữ thanh Navigation chính và Bottom Bar tinh gọn chuẩn 5 tabs.
+
+### 2.16. Tối Ưu Hóa SEO Toàn Diện Cho Domain Chính Thức (lichannhien.com)
+- **Tên miền chính thức**: `https://lichannhien.com/`.
+- **Mục tiêu xếp hạng Top Search**:
+  - Tối ưu hóa toàn diện cho các từ khóa tìm kiếm cốt lõi của người dùng: *"lịch", "lịch âm dương", "xem ngày", "xem ngày âm dương", "ngày hôm nay", "lịch hôm nay", "hôm nay ngày mấy", "hôm nay là bao nhiêu âm lịch"*.
+  - Các cụm từ tìm kiếm phụ trợ: *"giờ hoàng đạo hôm nay", "xem ngày tốt xấu", "đổi ngày âm dương", "lịch việt nam", "lịch vạn niên 2026", "tiết khí", "bính ngọ 2026"*.
+- **Cấu trúc On-page & Semantic SEO**:
+  - Thẻ `<h1>` duy nhất ngữ nghĩa: "Lịch An Nhiên — Lịch Âm Dương, Lịch Vạn Niên & Xem Ngày Tốt Xấu".
+  - **SEO Quick Answer Banner**: Trực diện trả lời câu hỏi tìm kiếm số 1 ngay đầu trang: *"Hôm nay ngày mấy? Thứ X, dd/mm/yyyy • Hôm nay là bao nhiêu âm lịch? Ngày dd/mm (Can Chi)"*.
+  - **SEO Knowledge Hub & FAQ Accordion**: 4 khối hỏi đáp chuẩn ngữ nghĩa giải quyết toàn bộ thắc mắc phổ biến về lịch âm dương, giờ hoàng đạo, đổi ngày và ngày tốt xấu.
+  - **Dynamic SEO Headings & Title**: React hook cập nhật `document.title` và `meta description` theo thời gian thực tương ứng với từng ngày và tab người dùng đang xem.
+- **Technical SEO & Rich Snippets**:
+  - `robots.txt`: Cho phép bot crawl toàn bộ trang chính, chặn `/admin`, `/api/`, `/mobile-review`, trỏ sitemap chuẩn `https://lichannhien.com/sitemap.xml`.
+  - `sitemap.xml`: XML sitemap chuẩn chỉ mục hóa toàn bộ các trang và chức năng chính.
+  - `manifest.json`: Web App Manifest phục vụ Google PWA indexing và cài đặt màn hình chính.
+  - Ảnh OpenGraph & Twitter Card chuẩn 1200x630 px (`og-image.png`).
+  - **3 Schema.org JSON-LD**: `WebSite` (Sitelinks Searchbox), `WebApplication` (Rating 4.9⭐, Free), `FAQPage` (5 câu hỏi đáp phổ biến đạt Rich Snippets mở rộng trên kết quả tìm kiếm Google).
+
+
 
 

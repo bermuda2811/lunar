@@ -156,15 +156,23 @@
 
 ---
 
-## 3. CÁC ENDPOINT QUẢN TRỊ ADMIN CMS (CRUD)
+## 3. CÁC ENDPOINT QUẢN TRỊ ADMIN CMS (AUTH & CRUD)
 
+### 3.1. Xác thực Quản trị viên
+- `POST /admin/login`: Đăng nhập quản trị viên CMS
+  - Body: `{ "username": "admin", "password": "..." }`
+  - Response: `{ "success": true, "data": { "token": "adm_...", "username": "admin", "role": "admin" } }`
+- `GET /admin/me`: Xác thực phiên làm việc hiện tại của quản trị viên (yêu cầu header `Authorization: Bearer <token>`)
+- `POST /admin/logout`: Hủy bỏ phiên làm việc và xóa token
+
+### 3.2. Quản lý Dữ liệu Hệ thống (Yêu cầu Header Authorization Bearer)
 - `POST /events`: Tạo sự kiện mới
 - `PUT /events/:id`: Cập nhật sự kiện (Tên, ngày, loại, trạng thái Hiển thị/Ẩn, ý nghĩa)
 - `DELETE /events/:id`: Xóa sự kiện
+- `POST /donation/config`: Cập nhật cấu hình nhận tiền & mã VietQR
+- `PATCH /donation/transactions/:id/confirm`: Duyệt giao dịch ủng hộ
 - `GET /stats`: Thống kê tổng số sự kiện, sự kiện đang kích hoạt, thống kê theo danh mục
 - `GET /quotes`: Danh sách câu chúc / danh ngôn
-- `POST /quotes`: Thêm câu chúc mới
 - `GET /config`: Lấy cấu hình hệ thống
-- `PUT /config`: Cập nhật cấu hình
 
 
