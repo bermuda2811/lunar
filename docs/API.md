@@ -145,8 +145,9 @@
   - Body: `{ "userId": "user_xxx", "reminders": [...] }`
 
 ### 2.6. Thông tin Ủng hộ nhà phát triển & VietQR
-- `GET /donation` hoặc `GET /donation/config`: Lấy cấu hình tài khoản ngân hàng, mã BIN, số tài khoản, MoMo, cú pháp mẫu và link VietQR động mặc định.
+- `GET /donation` hoặc `GET /donation/config`: Lấy cấu hình tài khoản ngân hàng, mã BIN, số tài khoản, MoMo, cú pháp mẫu, link VietQR động mặc định và `customQrUrl` (nếu có ảnh tải lên).
 - `POST /donation/config`: (Admin) Cập nhật thông tin ngân hàng nhận tiền và mã QR.
+- `POST /donation/upload-qr`: (Admin) Tải lên ảnh QR Code ủng hộ tùy chỉnh (hỗ trợ Base64 file ảnh PNG, JPG, WEBP tối đa 15MB, lưu trữ tại `/uploads/` và cập nhật `custom_qr_url`).
 - `POST /donation/transactions`: Tạo giao dịch ủng hộ với mã thanh toán riêng biệt (`ANNHIEN_xxxxx`), tạo ảnh mã VietQR động NAPAS 247 đúng số tiền và cú pháp.
   - Body: `{ "amount": 50000, "senderName": "Cô Lan", "senderEmail": "lan@gmail.com", "message": "Chúc ứng dụng phát triển", "isAnonymous": false }`
   - Response: Trả về object transaction đầy đủ kèm `vietQrUrl` động.

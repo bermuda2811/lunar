@@ -224,3 +224,27 @@ Tài liệu này lưu trữ toàn bộ các Quyết định Kiến trúc (Archit
   4. **Kiểm thử tự động**: Xây dựng bộ test `testCalendar.ts` kiểm thử các mốc chuyển giao năm, ngày Hoàng đạo và chuyển đổi 2 chiều đạt 100% độ chính xác.
 - **Reason**: Đảm bảo trải nghiệm trực quan chính xác từng ngày cho người dùng thực tế và độ tin cậy thiên văn tuyệt đối cho ứng dụng Lịch Việt.
 
+---
+
+## D-016: Hỗ Trợ Upload Ảnh QR Code Ủng Hộ Tùy Chỉnh & Đồng Bộ Thông Tin CMS Ra Giao Diện Người Dùng
+- **Date**: 2026-10-03
+- **Status**: ACTIVE
+- **Context**: Mã QR và thông tin tài khoản ngân hàng ủng hộ trên Web App trước đây bị gán cứng (hardcode MB Bank, NGUYEN TRUNG, 0988668899) thay vì lấy theo cấu hình người quản trị đã lưu trong MySQL thông qua Admin CMS. Đồng thời, một số ngân hàng (như VPBank) tạo mã QR không khớp hoàn toàn với template VietQR tự động, do đó quản trị viên có nhu cầu tải trực tiếp ảnh chụp mã QR từ app ngân hàng lên để người dùng quét chuẩn xác 100%.
+- **Decision**:
+  1. **Upload & Phục Vụ Ảnh Tĩnh Trên Backend**:
+     - Cấu hình thư mục tĩnh `/uploads` phục vụ trực tiếp qua Express (`app.use('/uploads', express.static(uploadsDir))`).
+     - Tăng giới hạn payload JSON lên 25MB (`express.json({ limit: '25mb' })`) để xử lý upload ảnh an toàn.
+     - Endpoint `POST /api/v1/donation/upload-qr` (bảo vệ bởi `adminAuthMiddleware`): tiếp nhận Base64 hình ảnh, ghi file định dạng an toàn vào thư mục `uploads/` và cập nhật đường dẫn vào cột `custom_qr_url` trong bảng `donation_config`.
+     - Nâng cấp cột `custom_qr_url` sang kiểu `LONGTEXT` trong MySQL để lưu trữ linh hoạt.
+  2. **Giao Diện Admin CMS (`/admin`)**:
+     - Bổ sung khối xem trước trực quan (Live Preview) cho mã QR trong mục "Ủng hộ & VietQR".
+     - Nút tải lên ảnh chụp QR code từ máy tính/điện thoại (`input[type="file"]`).
+     - Nút xóa ảnh tùy chỉnh để chuyển về mã VietQR tự động khi cần.
+     - Tự động đồng bộ và xem trước mã VietQR thời gian thực khi chỉnh sửa số tài khoản, mã BIN, chủ tài khoản.
+  3. **Đồng Bộ Dữ Liệu Lên Giao Diện Web & Mobile App**:
+     - Loại bỏ toàn bộ giá trị hardcode trong `web/src/views/CalendarWebApp.tsx`, `web/src/screens/DonateScreen.tsx` và `mobile/src/screens/DonateScreen.tsx`.
+     - Tự động gọi API `GET /api/v1/donation/config` để lấy thông tin mới nhất: Ngân hàng, Chủ tài khoản, Số tài khoản, Ví MoMo.
+     - Logic hiển thị mã QR: Ưu tiên hiển thị `customQrUrl` nếu đã được tải lên; nếu chưa có sẽ tự động sinh mã VietQR theo chuẩn Napas 24/7.
+     - Nút "Sao chép số tài khoản" tự động sao chép đúng số tài khoản quản trị viên đã cấu hình.
+- **Reason**: Đảm bảo sự linh hoạt tối đa cho quản trị viên, loại bỏ hoàn toàn sai lệch thông tin giữa cài đặt CMS và giao diện người dùng thực tế, hỗ trợ mọi ngân hàng Việt Nam một cách chính xác tuyệt đối.
+

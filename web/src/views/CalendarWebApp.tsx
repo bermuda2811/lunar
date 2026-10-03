@@ -26,7 +26,7 @@ import {
   HelpCircle
 } from 'lucide-react';
 
-import { ReminderItem, AppSettings, UserAccount } from '../types';
+import { ReminderItem, AppSettings, UserAccount, DonationConfig } from '../types';
 import {
   getFullDayData,
   solarToLunar,
@@ -304,14 +304,38 @@ export const CalendarWebApp: React.FC<CalendarWebAppProps> = ({
   const [donorMessage, setDonorMessage] = useState<string>('Chúc ứng dụng Lịch An Nhiên ngày càng phát triển!');
   const [donorEmail, setDonorEmail] = useState<string>('');
   const [copiedBank, setCopiedBank] = useState<boolean>(false);
+  const [donationConfig, setDonationConfig] = useState<DonationConfig | null>(null);
+
+  useEffect(() => {
+    fetch('/api/v1/donation/config')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setDonationConfig(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const effectiveBankName = donationConfig?.bankName || 'Ngân hàng Việt Nam thịnh vượng';
+  const effectiveAccountNumber = donationConfig?.accountNumber || '170523668';
+  const effectiveAccountHolder = donationConfig?.accountHolder || 'NGUYEN THANH TRUNG';
+  const effectiveSyntax = donationConfig?.transferSyntax || 'LICHVIET';
 
   const vietQrUrl = useMemo(() => {
-    const syntax = `LICHVIET ${currentUser.id.replace('guest_', '').substring(0, 8)}`;
-    return `https://img.vietqr.io/image/970422-0988668899-compact2.png?amount=${donateAmount}&addInfo=${encodeURIComponent(syntax)}&accountName=NGUYEN%20TRUNG`;
-  }, [donateAmount, currentUser.id]);
+    if (donationConfig?.customQrUrl) {
+      return donationConfig.customQrUrl;
+    }
+    const syntax = `${effectiveSyntax} ${currentUser.id.replace('guest_', '').substring(0, 8)}`;
+    const bin = donationConfig?.bankBin || '970422';
+    const acc = effectiveAccountNumber;
+    const tpl = donationConfig?.qrTemplate || 'compact2';
+    const holder = effectiveAccountHolder;
+    return `https://img.vietqr.io/image/${bin}-${acc}-${tpl}.png?amount=${donateAmount}&addInfo=${encodeURIComponent(syntax)}&accountName=${encodeURIComponent(holder)}`;
+  }, [donationConfig, donateAmount, currentUser.id, effectiveSyntax, effectiveAccountNumber, effectiveAccountHolder]);
 
   const handleCopyBank = () => {
-    navigator.clipboard.writeText('0988668899');
+    navigator.clipboard.writeText(effectiveAccountNumber);
     setCopiedBank(true);
     setTimeout(() => setCopiedBank(false), 2000);
   };
@@ -1488,23 +1512,25 @@ export const CalendarWebApp: React.FC<CalendarWebAppProps> = ({
                   />
                 </div>
                 <span className="text-[11px] font-semibold text-slate-500 text-center">
-                  Mở ứng dụng Ngân hàng để quét mã VietQR tự động
+                  {donationConfig?.customQrUrl
+                    ? 'Quét mã QR để chuyển khoản trực tiếp qua ngân hàng hoặc ví điện tử'
+                    : 'Mở ứng dụng Ngân hàng để quét mã VietQR tự động'}
                 </span>
 
                 {/* Bank Transfer Details Box */}
                 <div className="w-full mt-4 p-3 bg-white rounded-2xl border border-slate-200 text-xs space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-slate-400">Ngân hàng:</span>
-                    <strong className="text-slate-800">MB Bank (Quân Đội)</strong>
+                    <strong className="text-slate-800 text-right">{effectiveBankName}</strong>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-400">Chủ tài khoản:</span>
-                    <strong className="text-slate-800">NGUYEN TRUNG</strong>
+                    <strong className="text-slate-800 text-right">{effectiveAccountHolder}</strong>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-400">Số tài khoản:</span>
                     <div className="flex items-center gap-1.5">
-                      <strong className="text-[#B3261E] font-mono text-sm">0988668899</strong>
+                      <strong className="text-[#B3261E] font-mono text-sm">{effectiveAccountNumber}</strong>
                       <button
                         onClick={handleCopyBank}
                         className="p-1 text-slate-500 hover:text-slate-900 cursor-pointer"
@@ -1514,6 +1540,12 @@ export const CalendarWebApp: React.FC<CalendarWebAppProps> = ({
                       </button>
                     </div>
                   </div>
+                  {donationConfig?.momoPhone && (
+                    <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+                      <span className="text-slate-400">Ví MoMo:</span>
+                      <strong className="text-pink-700 font-mono text-xs">{donationConfig.momoPhone}</strong>
+                    </div>
+                  )}
                 </div>
               </div>
 

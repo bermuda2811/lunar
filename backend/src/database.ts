@@ -200,7 +200,7 @@ export async function initDatabase() {
       account_number VARCHAR(50) NOT NULL DEFAULT '0988668899',
       account_holder VARCHAR(255) NOT NULL DEFAULT 'NGUYEN TRUNG',
       qr_template VARCHAR(50) NOT NULL DEFAULT 'compact2',
-      custom_qr_url TEXT,
+      custom_qr_url LONGTEXT,
       suggested_amounts TEXT NOT NULL,
       momo_phone VARCHAR(50) DEFAULT '0988668899',
       momo_name VARCHAR(255) DEFAULT 'NGUYEN TRUNG',
@@ -255,6 +255,11 @@ export async function initDatabase() {
       1
     ]);
   }
+
+  // Ensure custom_qr_url can store large images or URLs
+  try {
+    await pool.query('ALTER TABLE donation_config MODIFY COLUMN custom_qr_url LONGTEXT');
+  } catch (e) {}
 
 
   // Seed events if empty

@@ -86,10 +86,12 @@ export const DonateScreen: React.FC<DonateScreenProps> = ({ onNavigate }) => {
   const effectiveAmount = isCustomMode ? (parseInt(customAmountStr, 10) || 0) : selectedAmount;
   const effectiveSyntax = activeTransaction ? activeTransaction.transactionCode : `${config.transferSyntax || 'LICHVIET'}`;
 
-  // VietQR Dynamic URL calculation
+  // VietQR Dynamic URL calculation: ưu tiên customQrUrl nếu có
   const qrUrl = activeTransaction
     ? activeTransaction.vietQrUrl
-    : `https://img.vietqr.io/image/${config.bankBin}-${config.accountNumber}-${config.qrTemplate}.png?amount=${effectiveAmount}&addInfo=${encodeURIComponent(effectiveSyntax)}&accountName=${encodeURIComponent(config.accountHolder)}`;
+    : config.customQrUrl
+      ? config.customQrUrl
+      : `https://img.vietqr.io/image/${config.bankBin}-${config.accountNumber}-${config.qrTemplate}.png?amount=${effectiveAmount}&addInfo=${encodeURIComponent(effectiveSyntax)}&accountName=${encodeURIComponent(config.accountHolder)}`;
 
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);

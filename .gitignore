@@ -13,3 +13,7 @@ backend/data/*.db-wal
 backend/.env
 backend/.env.*
 !backend/.env.example
+
+# Uploads
+uploads/*
+!uploads/.gitkeep

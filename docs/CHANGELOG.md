@@ -2,6 +2,21 @@
 
 Mọi thay đổi đáng kể của dự án được ghi nhận tại file này theo định dạng Keep a Changelog.
 
+## [1.1.2] - 2026-10-03
+### Added
+- **Hỗ Trợ Upload Ảnh QR Code Ủng Hộ Trong Admin CMS**:
+  - Tích hợp nút tải ảnh mã QR trực tiếp từ thiết bị (hỗ trợ file ảnh PNG, JPG, WEBP dung lượng tối đa 15MB).
+  - API endpoint `POST /api/v1/donation/upload-qr` tiếp nhận Base64, lưu trữ an toàn vào `/uploads` và cập nhật đường dẫn vào database `donation_config`.
+  - Khung xem trước (Live Preview) ảnh QR thời gian thực trong Admin CMS.
+  - Tùy chọn gỡ ảnh tùy chỉnh để quay về sử dụng mã VietQR tự động.
+
+### Fixed
+- **Đồng Bộ Dữ Liệu Cấu Hình Ủng Hộ Ra Giao Diện Người Dùng**:
+  - Khắc phục hoàn toàn việc gán cứng thông tin tài khoản ngân hàng (MB Bank, 0988668899, NGUYEN TRUNG) trong `CalendarWebApp.tsx`.
+  - Tự động nạp động thông tin ngân hàng, chủ tài khoản, số tài khoản, ví MoMo từ API `/api/v1/donation/config`.
+  - Ưu tiên hiển thị ảnh QR code do Admin tải lên trên Web App và các màn hình ủng hộ.
+  - Sửa nút sao chép số tài khoản sao chép chính xác số tài khoản thực tế được cấu hình trong CMS.
+
 ## [1.1.1] - 2026-10-03
 ### Fixed
 - **Khắc Phục Lỗi Hiển Thị Ngày Mặc Định**:

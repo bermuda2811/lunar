@@ -23,8 +23,15 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ limit: '25mb', extended: true }));
+
+// Uploads directory for custom QR code & user uploads
+const uploadsDir = path.resolve(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+app.use('/uploads', express.static(uploadsDir));
 
 // --- ADMIN CMS AUTHENTICATION & SESSION MANAGEMENT ---
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
@@ -885,6 +892,57 @@ app.get(['/api/v1/donation', '/api/v1/donation/config'], async (req: Request, re
   }
 });
 
+// POST /api/v1/donation/upload-qr: Tải lên ảnh QR Code ủng hộ tùy chỉnh (dành cho Admin CMS)
+app.post('/api/v1/donation/upload-qr', adminAuthMiddleware, async (req: Request, res: Response) => {
+  try {
+    const { imageBase64, fileName } = req.body || {};
+    if (!imageBase64 || typeof imageBase64 !== 'string') {
+      return res.status(400).json({ success: false, message: 'Dữ liệu ảnh không hợp lệ' });
+    }
+
+    let ext = 'png';
+    let base64Data = imageBase64;
+    const match = imageBase64.match(/^data:image\/([a-zA-Z0-9+.-]+);base64,(.+)$/);
+    if (match) {
+      ext = match[1] === 'jpeg' ? 'jpg' : match[1].replace('+xml', '');
+      base64Data = match[2];
+    } else if (fileName && fileName.includes('.')) {
+      ext = fileName.split('.').pop() || 'png';
+    }
+
+    const buffer = Buffer.from(base64Data, 'base64');
+    if (buffer.length > 15 * 1024 * 1024) {
+      return res.status(400).json({ success: false, message: 'Kích thước ảnh vượt quá giới hạn 15MB' });
+    }
+
+    const uniqueName = `qr_donate_${Date.now()}_${crypto.randomBytes(4).toString('hex')}.${ext}`;
+    const filePath = path.join(uploadsDir, uniqueName);
+    fs.writeFileSync(filePath, buffer);
+
+    const fileUrl = `/uploads/${uniqueName}`;
+
+    // Update database immediately
+    const existing = await db.get('SELECT id FROM donation_config LIMIT 1') as any;
+    if (existing) {
+      await db.run('UPDATE donation_config SET custom_qr_url = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [fileUrl, existing.id]);
+    } else {
+      await db.run('INSERT INTO donation_config (custom_qr_url) VALUES (?)', [fileUrl]);
+    }
+
+    console.log(`[DONATION] Đã tải lên ảnh QR code thành công: ${fileUrl}`);
+    res.json({
+      success: true,
+      message: 'Tải lên ảnh QR code thành công',
+      data: {
+        url: fileUrl
+      }
+    });
+  } catch (err: any) {
+    console.error('[DONATION] Lỗi tải lên ảnh QR:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // POST /api/v1/donation/config: Cập nhật cấu hình QR & tài khoản nhận (cho Admin CMS)
 app.post('/api/v1/donation/config', adminAuthMiddleware, async (req: Request, res: Response) => {
   try {
@@ -898,29 +956,43 @@ app.post('/api/v1/donation/config', adminAuthMiddleware, async (req: Request, re
       ? JSON.stringify(suggestedAmounts) 
       : '[10000, 30000, 50000, 100000, 200000]';
 
-    const existing = await db.get('SELECT id FROM donation_config LIMIT 1') as any;
+    const existing = await db.get('SELECT * FROM donation_config LIMIT 1') as any;
+
     if (existing) {
+      const finalBankBin = bankBin !== undefined ? bankBin : existing.bank_bin;
+      const finalBankName = bankName !== undefined ? bankName : existing.bank_name;
+      const finalAccNumber = accountNumber !== undefined ? accountNumber : existing.account_number;
+      const finalAccHolder = accountHolder !== undefined ? accountHolder : existing.account_holder;
+      const finalQrTemplate = qrTemplate !== undefined ? qrTemplate : existing.qr_template;
+      const finalCustomQrUrl = customQrUrl !== undefined ? (customQrUrl ? customQrUrl : null) : existing.custom_qr_url;
+      const finalAmounts = suggestedAmounts !== undefined ? suggestedAmountsStr : existing.suggested_amounts;
+      const finalMomoPhone = momoPhone !== undefined ? (momoPhone ? momoPhone : null) : existing.momo_phone;
+      const finalMomoName = momoName !== undefined ? (momoName ? momoName : null) : existing.momo_name;
+      const finalTransferSyntax = transferSyntax !== undefined ? transferSyntax : existing.transfer_syntax;
+      const finalThankYou = thankYouMessage !== undefined ? thankYouMessage : existing.thank_you_message;
+      const finalIsActive = isActive !== undefined ? (isActive ? 1 : 0) : existing.is_active;
+
       await db.run(`
         UPDATE donation_config
-        SET bank_bin = COALESCE(?, bank_bin),
-            bank_name = COALESCE(?, bank_name),
-            account_number = COALESCE(?, account_number),
-            account_holder = COALESCE(?, account_holder),
-            qr_template = COALESCE(?, qr_template),
+        SET bank_bin = ?,
+            bank_name = ?,
+            account_number = ?,
+            account_holder = ?,
+            qr_template = ?,
             custom_qr_url = ?,
             suggested_amounts = ?,
             momo_phone = ?,
             momo_name = ?,
-            transfer_syntax = COALESCE(?, transfer_syntax),
-            thank_you_message = COALESCE(?, thank_you_message),
-            is_active = COALESCE(?, is_active),
+            transfer_syntax = ?,
+            thank_you_message = ?,
+            is_active = ?,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
       `, [
-        bankBin, bankName, accountNumber, accountHolder,
-        qrTemplate, customQrUrl || null, suggestedAmountsStr,
-        momoPhone || null, momoName || null, transferSyntax, thankYouMessage,
-        isActive !== undefined ? (isActive ? 1 : 0) : 1,
+        finalBankBin, finalBankName, finalAccNumber, finalAccHolder,
+        finalQrTemplate, finalCustomQrUrl, finalAmounts,
+        finalMomoPhone, finalMomoName, finalTransferSyntax, finalThankYou,
+        finalIsActive,
         existing.id
       ]);
     } else {

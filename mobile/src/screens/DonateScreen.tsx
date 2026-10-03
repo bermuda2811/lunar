@@ -99,12 +99,14 @@ export const DonateScreen: React.FC<DonateScreenProps> = ({
     ? activeTransaction.transactionCode
     : `${config.transferSyntax || 'LICHVIET'}`;
 
-  // VietQR Dynamic URL calculation
+  // VietQR Dynamic URL calculation: ưu tiên customQrUrl nếu có
   const qrUrl = activeTransaction
     ? activeTransaction.vietQrUrl
-    : `https://img.vietqr.io/image/${config.bankBin}-${config.accountNumber}-${config.qrTemplate}.png?amount=${effectiveAmount}&addInfo=${encodeURIComponent(
-        effectiveSyntax
-      )}&accountName=${encodeURIComponent(config.accountHolder)}`;
+    : config.customQrUrl
+      ? config.customQrUrl
+      : `https://img.vietqr.io/image/${config.bankBin}-${config.accountNumber}-${config.qrTemplate}.png?amount=${effectiveAmount}&addInfo=${encodeURIComponent(
+          effectiveSyntax
+        )}&accountName=${encodeURIComponent(config.accountHolder)}`;
 
   const handleCopy = (text: string, label: string) => {
     setCopiedField(label);

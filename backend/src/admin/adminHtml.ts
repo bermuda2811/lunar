@@ -898,31 +898,63 @@ export function getAdminHtml(): string {
           </div>
 
           <div style="padding: 20px;">
-            <!-- Config Grid -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; background: #FAFBFD; border: 1px solid #E2E8F0; padding: 18px; border-radius: 12px;">
-              <div class="form-group">
-                <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Ngân hàng</label>
-                <input type="text" id="cfg-bank-name" class="form-control" value="MB Bank (Ngân hàng Quân Đội)">
+            <!-- Config Grid (Inputs on left, QR preview & upload on right) -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 24px;">
+              <!-- Left: Form inputs -->
+              <div style="background: #FAFBFD; border: 1px solid #E2E8F0; padding: 20px; border-radius: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+                <div class="form-group">
+                  <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;"><i class="fa-solid fa-building-columns"></i> Ngân hàng</label>
+                  <input type="text" id="cfg-bank-name" class="form-control" value="" oninput="if(!document.getElementById('cfg-custom-qr-url').value) updateQrPreview()">
+                </div>
+                <div class="form-group">
+                  <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;"><i class="fa-solid fa-credit-card"></i> Số tài khoản</label>
+                  <input type="text" id="cfg-account-number" class="form-control" value="" oninput="if(!document.getElementById('cfg-custom-qr-url').value) updateQrPreview()">
+                </div>
+                <div class="form-group">
+                  <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;"><i class="fa-solid fa-user"></i> Chủ tài khoản (In hoa)</label>
+                  <input type="text" id="cfg-account-holder" class="form-control" value="" oninput="if(!document.getElementById('cfg-custom-qr-url').value) updateQrPreview()">
+                </div>
+                <div class="form-group">
+                  <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;"><i class="fa-solid fa-barcode"></i> Mã BIN ngân hàng</label>
+                  <input type="text" id="cfg-bank-bin" class="form-control" value="" oninput="if(!document.getElementById('cfg-custom-qr-url').value) updateQrPreview()">
+                </div>
+                <div class="form-group">
+                  <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;"><i class="fa-solid fa-mobile-screen"></i> Ví MoMo (Số điện thoại)</label>
+                  <input type="text" id="cfg-momo-phone" class="form-control" value="">
+                </div>
+                <div class="form-group">
+                  <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;"><i class="fa-solid fa-comment-dots"></i> Cú pháp chuyển khoản</label>
+                  <input type="text" id="cfg-transfer-syntax" class="form-control" value="" oninput="if(!document.getElementById('cfg-custom-qr-url').value) updateQrPreview()">
+                </div>
               </div>
-              <div class="form-group">
-                <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Số tài khoản</label>
-                <input type="text" id="cfg-account-number" class="form-control" value="0988668899">
-              </div>
-              <div class="form-group">
-                <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Chủ tài khoản (In hoa không dấu)</label>
-                <input type="text" id="cfg-account-holder" class="form-control" value="NGUYEN TRUNG">
-              </div>
-              <div class="form-group">
-                <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Mã BIN ngân hàng</label>
-                <input type="text" id="cfg-bank-bin" class="form-control" value="970422">
-              </div>
-              <div class="form-group">
-                <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Ví MoMo (Số điện thoại)</label>
-                <input type="text" id="cfg-momo-phone" class="form-control" value="0988668899">
-              </div>
-              <div class="form-group">
-                <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Cú pháp chuyển khoản mặc định</label>
-                <input type="text" id="cfg-transfer-syntax" class="form-control" value="LICHVIET">
+
+              <!-- Right: QR Code Preview & Upload Box -->
+              <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                <input type="hidden" id="cfg-custom-qr-url" value="">
+                <div style="width: 100%;">
+                  <div style="font-weight: 700; font-size: 14px; color: #1E293B; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="fa-solid fa-qrcode" style="color: #B3261E;"></i> Ảnh Mã QR Ủng Hộ
+                  </div>
+                  <div style="position: relative; width: 170px; height: 170px; margin: 0 auto 10px; background: #F8FAFC; border: 1px dashed #CBD5E1; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                    <img id="cfg-qr-preview" src="" alt="Mã QR" style="width: 100%; height: 100%; object-fit: contain; padding: 6px;">
+                  </div>
+                  <div id="cfg-qr-badge" class="status-badge" style="display: inline-flex; font-size: 11px; margin-bottom: 12px;">
+                    <i class="fa-solid fa-qrcode"></i> Mã VietQR tự động
+                  </div>
+                </div>
+
+                <div style="width: 100%; max-width: 260px; display: flex; flex-direction: column; gap: 8px;">
+                  <label class="btn-primary" style="cursor: pointer; width: 100%; padding: 9px 14px; font-size: 13px; justify-content: center; margin: 0; box-shadow: 0 2px 6px rgba(179,38,30,0.2);">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Tải ảnh QR code lên
+                    <input type="file" id="cfg-qr-file-input" accept="image/*" style="display: none;" onchange="handleUploadQrImage(event)">
+                  </label>
+                  <button type="button" class="btn-secondary" id="btn-remove-custom-qr" style="width: 100%; padding: 7px 12px; font-size: 12px; display: none; color: #DC2626; border-color: #FECACA; background: #FEF2F2;" onclick="removeCustomQr()">
+                    <i class="fa-solid fa-trash-can"></i> Xóa ảnh (Dùng VietQR)
+                  </button>
+                  <p style="font-size: 11px; color: #64748B; margin: 0; line-height: 1.4;">
+                    Hỗ trợ PNG, JPG, WEBP. Ảnh này sẽ hiển thị trực tiếp cho người dùng ủng hộ trên website.
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -1411,6 +1443,77 @@ export function getAdminHtml(): string {
       }
     }
 
+    function updateQrPreview(cfg) {
+      const customUrl = document.getElementById('cfg-custom-qr-url').value;
+      const previewImg = document.getElementById('cfg-qr-preview');
+      const badge = document.getElementById('cfg-qr-badge');
+      const btnRemove = document.getElementById('btn-remove-custom-qr');
+
+      if (customUrl) {
+        previewImg.src = customUrl;
+        badge.innerHTML = '<i class="fa-solid fa-image"></i> Ảnh QR tùy chỉnh';
+        badge.className = 'status-badge active';
+        badge.style.background = '#ECFDF5';
+        badge.style.color = '#059669';
+        btnRemove.style.display = 'inline-flex';
+      } else {
+        const bin = document.getElementById('cfg-bank-bin').value || '970422';
+        const acc = document.getElementById('cfg-account-number').value || '0988668899';
+        const holder = document.getElementById('cfg-account-holder').value || 'NGUYEN TRUNG';
+        const syntax = document.getElementById('cfg-transfer-syntax').value || 'LICHVIET';
+        previewImg.src = \`https://img.vietqr.io/image/\${bin}-\${acc}-compact2.png?amount=0&addInfo=\${encodeURIComponent(syntax)}&accountName=\${encodeURIComponent(holder)}\`;
+        badge.innerHTML = '<i class="fa-solid fa-qrcode"></i> Mã VietQR tự động';
+        badge.className = 'status-badge';
+        badge.style.background = '#EFF6FF';
+        badge.style.color = '#2563EB';
+        btnRemove.style.display = 'none';
+      }
+    }
+
+    async function handleUploadQrImage(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        alert('Vui lòng chọn file hình ảnh (PNG, JPG, WEBP)!');
+        return;
+      }
+      if (file.size > 15 * 1024 * 1024) {
+        alert('Dung lượng ảnh tối đa 15MB!');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64 = e.target.result;
+        try {
+          const res = await fetch('/api/v1/donation/upload-qr', {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ imageBase64: base64, fileName: file.name })
+          });
+          const result = await res.json();
+          if (result.success && result.data?.url) {
+            document.getElementById('cfg-custom-qr-url').value = result.data.url;
+            updateQrPreview();
+            alert('Tải ảnh QR code lên thành công! Trang web sẽ ưu tiên hiển thị ảnh này.');
+          } else {
+            alert('Lỗi: ' + (result.message || 'Không thể tải ảnh lên'));
+          }
+        } catch (err) {
+          alert('Lỗi kết nối: ' + err.message);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeCustomQr() {
+      if (!confirm('Bạn có chắc muốn xóa ảnh QR tùy chỉnh và chuyển sang dùng mã VietQR tự động?')) return;
+      document.getElementById('cfg-custom-qr-url').value = '';
+      updateQrPreview();
+      saveDonationConfig();
+    }
+
     async function loadDonationsData() {
       try {
         const [cfgRes, txnsRes] = await Promise.all([
@@ -1428,6 +1531,8 @@ export function getAdminHtml(): string {
           document.getElementById('cfg-bank-bin').value = c.bankBin || '';
           document.getElementById('cfg-momo-phone').value = c.momoPhone || '';
           document.getElementById('cfg-transfer-syntax').value = c.transferSyntax || '';
+          document.getElementById('cfg-custom-qr-url').value = c.customQrUrl || '';
+          updateQrPreview(c);
         }
 
         const tbody = document.getElementById('donations-table-body');
@@ -1484,6 +1589,7 @@ export function getAdminHtml(): string {
           bankBin: document.getElementById('cfg-bank-bin').value,
           momoPhone: document.getElementById('cfg-momo-phone').value,
           transferSyntax: document.getElementById('cfg-transfer-syntax').value,
+          customQrUrl: document.getElementById('cfg-custom-qr-url').value || null,
         };
         const res = await fetch('/api/v1/donation/config', {
           method: 'POST',
