@@ -299,10 +299,6 @@ export const CalendarWebApp: React.FC<CalendarWebAppProps> = ({
   // ==========================================
   // DONATE COMPONENT STATE
   // ==========================================
-  const [donateAmount, setDonateAmount] = useState<number>(30000);
-  const [donorName, setDonorName] = useState<string>('');
-  const [donorMessage, setDonorMessage] = useState<string>('Chúc ứng dụng Lịch An Nhiên ngày càng phát triển!');
-  const [donorEmail, setDonorEmail] = useState<string>('');
   const [copiedBank, setCopiedBank] = useState<boolean>(false);
   const [donationConfig, setDonationConfig] = useState<DonationConfig | null>(null);
 
@@ -331,8 +327,8 @@ export const CalendarWebApp: React.FC<CalendarWebAppProps> = ({
     const acc = effectiveAccountNumber;
     const tpl = donationConfig?.qrTemplate || 'compact2';
     const holder = effectiveAccountHolder;
-    return `https://img.vietqr.io/image/${bin}-${acc}-${tpl}.png?amount=${donateAmount}&addInfo=${encodeURIComponent(syntax)}&accountName=${encodeURIComponent(holder)}`;
-  }, [donationConfig, donateAmount, currentUser.id, effectiveSyntax, effectiveAccountNumber, effectiveAccountHolder]);
+    return `https://img.vietqr.io/image/${bin}-${acc}-${tpl}.png?amount=0&addInfo=${encodeURIComponent(syntax)}&accountName=${encodeURIComponent(holder)}`;
+  }, [donationConfig, currentUser.id, effectiveSyntax, effectiveAccountNumber, effectiveAccountHolder]);
 
   const handleCopyBank = () => {
     navigator.clipboard.writeText(effectiveAccountNumber);
@@ -1488,7 +1484,7 @@ export const CalendarWebApp: React.FC<CalendarWebAppProps> = ({
 
         {/* TAB 6: ỦNG HỘ NHÀ PHÁT TRIỂN (VIETQR) */}
         {activeTab === 'donate' && (
-          <div className="max-w-4xl mx-auto bg-white rounded-3xl p-5 sm:p-8 border border-slate-200/80 shadow-lg">
+          <div className="max-w-xl mx-auto bg-white rounded-3xl p-5 sm:p-8 border border-slate-200/80 shadow-lg">
             <div className="text-center mb-6 sm:mb-8">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-400 to-amber-600 text-white flex items-center justify-center mx-auto mb-3 shadow-md shadow-amber-900/20">
                 <Heart className="w-7 h-7 fill-white" />
@@ -1496,123 +1492,65 @@ export const CalendarWebApp: React.FC<CalendarWebAppProps> = ({
               <h2 className="text-xl sm:text-2xl font-bold font-serif text-slate-900">
                 Ủng Hộ Duy Trì Lịch An Nhiên
               </h2>
-              <p className="text-xs text-slate-500 max-w-lg mx-auto mt-2 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto mt-2 leading-relaxed">
                 Ứng dụng hoàn toàn miễn phí và không có quảng cáo. Mọi đóng góp hảo tâm của bạn đều giúp đội ngũ duy trì máy chủ và phát triển thêm nét đẹp văn hóa Việt.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 items-start">
-              {/* VietQR Dynamic Preview (col-span-5) */}
-              <div className="md:col-span-5 flex flex-col items-center bg-[#FDFBF7] p-4 sm:p-5 rounded-3xl border border-amber-200/80 shadow-inner">
-                <div className="w-full max-w-[240px] aspect-square rounded-2xl overflow-hidden bg-white p-2 border border-slate-200 shadow-2xs mb-3">
-                  <img
-                    src={vietQrUrl}
-                    alt="VietQR Chuyển Khoản"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-                <span className="text-[11px] font-semibold text-slate-500 text-center">
-                  {donationConfig?.customQrUrl
-                    ? 'Quét mã QR để chuyển khoản trực tiếp qua ngân hàng hoặc ví điện tử'
-                    : 'Mở ứng dụng Ngân hàng để quét mã VietQR tự động'}
-                </span>
-
-                {/* Bank Transfer Details Box */}
-                <div className="w-full mt-4 p-3 bg-white rounded-2xl border border-slate-200 text-xs space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-400">Ngân hàng:</span>
-                    <strong className="text-slate-800 text-right">{effectiveBankName}</strong>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-400">Chủ tài khoản:</span>
-                    <strong className="text-slate-800 text-right">{effectiveAccountHolder}</strong>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-400">Số tài khoản:</span>
-                    <div className="flex items-center gap-1.5">
-                      <strong className="text-[#B3261E] font-mono text-sm">{effectiveAccountNumber}</strong>
-                      <button
-                        onClick={handleCopyBank}
-                        className="p-1 text-slate-500 hover:text-slate-900 cursor-pointer"
-                        title="Sao chép số tài khoản"
-                      >
-                        {copiedBank ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                      </button>
-                    </div>
-                  </div>
-                  {donationConfig?.momoPhone && (
-                    <div className="flex justify-between items-center pt-2 border-t border-slate-100">
-                      <span className="text-slate-400">Ví MoMo:</span>
-                      <strong className="text-pink-700 font-mono text-xs">{donationConfig.momoPhone}</strong>
-                    </div>
-                  )}
-                </div>
+            {/* Mã chuyển khoản & Thông tin ngân hàng */}
+            <div className="flex flex-col items-center bg-[#FDFBF7] p-5 sm:p-7 rounded-3xl border border-amber-200/80 shadow-inner">
+              <div className="w-full max-w-[260px] sm:max-w-[280px] aspect-square rounded-2xl overflow-hidden bg-white p-3 border border-slate-200 shadow-xs mb-3 flex items-center justify-center">
+                <img
+                  src={vietQrUrl}
+                  alt="Mã QR Chuyển Khoản"
+                  className="w-full h-full object-contain"
+                />
               </div>
+              <span className="text-xs font-semibold text-slate-600 text-center max-w-sm mb-3 leading-relaxed">
+                {donationConfig?.customQrUrl
+                  ? 'Quét mã QR để chuyển khoản trực tiếp qua ngân hàng hoặc ví điện tử'
+                  : 'Mở ứng dụng Ngân hàng để quét mã VietQR tự động'}
+              </span>
 
-              {/* Amount Selection & Form (col-span-7) */}
-              <div className="md:col-span-7 space-y-4 sm:space-y-5">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-2">
-                    Chọn mức ủng hộ thân thiện:
-                  </label>
-                  <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
-                    {[
-                      { amt: 10000, label: '10.000đ', desc: 'Tách trà ấm' },
-                      { amt: 30000, label: '30.000đ', desc: 'Ly cà phê' },
-                      { amt: 50000, label: '50.000đ', desc: 'Món quà nhỏ' },
-                      { amt: 100000, label: '100.000đ', desc: 'Đồng hành' },
-                      { amt: 200000, label: '200.000đ', desc: 'Tấm lòng vàng' },
-                      { amt: 500000, label: '500.000đ', desc: 'Đại sứ văn hóa' },
-                    ].map((item) => (
-                      <button
-                        key={item.amt}
-                        onClick={() => setDonateAmount(item.amt)}
-                        className={`p-2.5 sm:p-3 rounded-2xl border text-center transition-all cursor-pointer ${
-                          donateAmount === item.amt
-                            ? 'bg-amber-50 border-amber-500 ring-2 ring-amber-400/40 shadow-xs'
-                            : 'bg-white hover:bg-slate-50 border-slate-200'
-                        }`}
-                      >
-                        <span className="text-xs font-bold text-slate-900 block">{item.label}</span>
-                        <span className="text-[10px] text-slate-500 block">{item.desc}</span>
-                      </button>
-                    ))}
+              {/* Bank Transfer Details Box */}
+              <div className="w-full mt-1 p-4 sm:p-5 bg-white rounded-2xl border border-slate-200 text-sm space-y-3 shadow-xs">
+                <div className="flex justify-between items-center py-0.5">
+                  <span className="text-slate-500 font-medium">Ngân hàng:</span>
+                  <strong className="text-slate-900 text-right font-semibold">{effectiveBankName}</strong>
+                </div>
+                <div className="flex justify-between items-center py-0.5">
+                  <span className="text-slate-500 font-medium">Chủ tài khoản:</span>
+                  <strong className="text-slate-900 text-right uppercase font-semibold">{effectiveAccountHolder}</strong>
+                </div>
+                <div className="flex justify-between items-center py-0.5">
+                  <span className="text-slate-500 font-medium">Số tài khoản:</span>
+                  <div className="flex items-center gap-2">
+                    <strong className="text-[#B3261E] font-mono text-base font-bold tracking-wide">{effectiveAccountNumber}</strong>
+                    <button
+                      onClick={handleCopyBank}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80 transition-all cursor-pointer text-xs font-bold active:scale-95 shadow-2xs"
+                      title="Sao chép số tài khoản"
+                    >
+                      {copiedBank ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          <span className="text-emerald-700">Đã chép</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5 text-amber-700" />
+                          <span>Sao chép</span>
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
-
-                <div className="space-y-3 text-xs">
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Họ tên của bạn (Tùy chọn):</label>
-                    <input
-                      type="text"
-                      placeholder="Người yêu mến văn hóa Việt"
-                      value={donorName}
-                      onChange={(e) => setDonorName(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-slate-200 text-slate-800 outline-none focus:ring-2 focus:ring-amber-400"
-                    />
+                {donationConfig?.momoPhone && (
+                  <div className="flex justify-between items-center pt-3 border-t border-slate-100">
+                    <span className="text-slate-500 font-medium">Ví MoMo:</span>
+                    <strong className="text-pink-700 font-mono text-sm font-semibold">{donationConfig.momoPhone}</strong>
                   </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Email nhận thư cảm ơn:</label>
-                    <input
-                      type="email"
-                      placeholder="email@vidu.com"
-                      value={donorEmail}
-                      onChange={(e) => setDonorEmail(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-slate-200 text-slate-800 outline-none focus:ring-2 focus:ring-amber-400"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Lời nhắn gửi:</label>
-                    <textarea
-                      rows={2}
-                      value={donorMessage}
-                      onChange={(e) => setDonorMessage(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-slate-200 text-slate-800 outline-none focus:ring-2 focus:ring-amber-400 resize-none"
-                    />
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>

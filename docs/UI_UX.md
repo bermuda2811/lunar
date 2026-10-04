@@ -65,10 +65,10 @@
 - Thẻ Tài khoản: Hiển thị avatar tròn (ký tự chữ cái đầu của email màu đỏ hoặc icon khách màu xám), email/trạng thái lưu trữ, và nút chuyển sang đăng nhập email hoặc đăng xuất rõ ràng.
 
 ### 4.5. Thẻ & Màn hình Ủng hộ nhà phát triển (Màn hình 7 & 13)
-- Thẻ nổi bật màu hồng ấm `#FFF1F2`, viền `#FECDD3` với icon trái tim đỏ mang lại cảm xúc gắn kết và ấm áp.
-- 4 thẻ mức ủng hộ dạng nút bấm lớn dễ chọn.
-- Ảnh mã VietQR tạo động theo chuẩn ngân hàng, khung bo tròn mềm mại.
-- Cụm thông tin chuyển khoản có nút "Sao chép" kèm phản hồi trực quan (icon tích xanh).
+- Bố cục thẻ đơn căn giữa thanh lịch (`max-w-xl`), viền bo tròn mềm mại, nền thẻ sáng sạch sẽ, màu nhấn đỏ thương hiệu `#B3261E`.
+- Loại bỏ hoàn toàn các trường form nhập liệu phức tạp (chọn mức tiền, họ tên, email, lời nhắn) để tối giản hóa trải nghiệm người dùng.
+- Khung mã QR chuyển khoản nổi bật ở trung tâm (kích thước chuẩn 260px - 280px, viền bo tròn góc), ưu tiên hiển thị ảnh chụp QR từ Admin CMS hoặc VietQR tự động (cho phép chuyển khoản tùy tâm).
+- Cụm thông tin chuyển khoản ngân hàng rõ ràng: Tên ngân hàng, Chủ tài khoản (in hoa), Số tài khoản (font mono to rõ), nút "Sao chép" kèm phản hồi trực quan (chuyển sang icon tích xanh và chữ "Đã chép"), cùng thông tin ví điện tử MoMo nếu có.
 
 ### 4.6. Đồng nhất 100% trải nghiệm Webview & Mobile
 - Toàn bộ bố cục, hệ màu, kích thước font chữ, khoảng cách padding/margin và các tương tác chạm được thiết kế đồng nhất 1:1 giữa bản Native (React Native Expo) và bản Web (React Web).

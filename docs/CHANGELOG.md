@@ -2,6 +2,14 @@
 
 Mọi thay đổi đáng kể của dự án được ghi nhận tại file này theo định dạng Keep a Changelog.
 
+## [1.1.3] - 2026-10-04
+### Changed
+- **Tinh Gọn Module Ủng Hộ (Web App)**:
+  - Loại bỏ hoàn toàn khối form nhập liệu bên phải (bộ nút chọn mức tiền 10k-500k, ô nhập họ tên, email nhận thư cảm ơn và ô nhập lời nhắn gửi).
+  - Tối ưu lại bố cục tab "Ủng hộ" thành thẻ đơn căn giữa (`max-w-xl mx-auto`), cân đối, thẩm mỹ và gọn gàng.
+  - Tập trung 100% vào việc hiển thị Mã chuyển khoản QR (ảnh tải lên từ Admin CMS hoặc mã VietQR tự động cho phép chuyển khoản tùy tâm `amount=0`) cùng Hộp thông tin tài khoản ngân hàng rõ ràng (Tên ngân hàng, Chủ tài khoản in hoa, Số tài khoản nổi bật kèm nút Sao chép trực quan, Ví MoMo).
+  - Dọn dẹp các state thừa không sử dụng trong `CalendarWebApp.tsx`.
+
 ## [1.1.2] - 2026-10-03
 ### Added
 - **Hỗ Trợ Upload Ảnh QR Code Ủng Hộ Trong Admin CMS**:

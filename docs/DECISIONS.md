@@ -248,3 +248,22 @@ Tài liệu này lưu trữ toàn bộ các Quyết định Kiến trúc (Archit
      - Nút "Sao chép số tài khoản" tự động sao chép đúng số tài khoản quản trị viên đã cấu hình.
 - **Reason**: Đảm bảo sự linh hoạt tối đa cho quản trị viên, loại bỏ hoàn toàn sai lệch thông tin giữa cài đặt CMS và giao diện người dùng thực tế, hỗ trợ mọi ngân hàng Việt Nam một cách chính xác tuyệt đối.
 
+---
+
+## D-017: Tinh Gọn Module Ủng Hộ (Loại Bỏ Form Bên Phải, Chỉ Giữ Mã QR Chuyển Khoản & Thông Tin Ngân Hàng)
+- **Date**: 2026-10-04
+- **Status**: ACTIVE
+- **Context**: Trước đây giao diện tab "Ủng hộ" trên Web (`CalendarWebApp.tsx`) chia 2 cột: Cột trái chứa mã VietQR và thông tin ngân hàng, cột phải chứa form chọn mức tiền (10k, 30k, 50k, 100k, 200k, 500k), ô nhập họ tên, email nhận thư cảm ơn và lời nhắn gửi. Người dùng yêu cầu bỏ các thông tin trong form bên phải, chỉ để mã chuyển khoản và các thông tin ngân hàng.
+- **Decision**:
+  1. **Loại bỏ toàn bộ khối form bên phải (`Amount Selection & Form`)**: Xóa bỏ các nút chọn mức tiền định sẵn, ô nhập họ tên người gửi, email nhận thư cảm ơn và ô nhập lời nhắn gửi.
+  2. **Bố cục lại giao diện tinh gọn, căn giữa (`max-w-xl mx-auto`)**:
+     - Thẻ thông tin được căn giữa, cân đối, sạch sẽ, không còn khoảng trống thừa.
+     - Giữ nguyên tiêu đề và lời tri ân ấm áp của Lịch An Nhiên.
+     - Khung hiển thị Mã chuyển khoản QR sắc nét, nổi bật (ưu tiên ảnh chụp QR do Admin tải lên trong CMS, nếu không sẽ dùng mã VietQR sinh tự động mức tùy tâm `amount=0`).
+     - Hộp thông tin chuyển khoản đầy đủ: Tên ngân hàng, Chủ tài khoản (in hoa), Số tài khoản (chữ to rõ, màu đỏ thương hiệu) kèm nút "Sao chép" (chuyển sang "Đã chép" có icon tích xanh), và Ví MoMo (nếu được cấu hình).
+  3. **Dọn dẹp State & Mã Nguồn**:
+     - Bỏ các state không còn sử dụng trong `CalendarWebApp.tsx` (`donateAmount`, `donorName`, `donorEmail`, `donorMessage`).
+     - `vietQrUrl` tạo mã với `amount=0` cho phép người dùng tự nhập số tiền tùy tâm trên ứng dụng ngân hàng khi quét mã.
+- **Reason**: Giúp giao diện chuyển khoản ủng hộ trở nên tối giản, trực quan, thao tác nhanh gọn và thân thiện tối đa với mọi đối tượng người dùng (đặc biệt là người cao tuổi) theo đúng tôn chỉ của dự án.
+
+
