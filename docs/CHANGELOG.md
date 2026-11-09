@@ -2,6 +2,14 @@
 
 Mọi thay đổi đáng kể của dự án được ghi nhận tại file này theo định dạng Keep a Changelog.
 
+## [1.1.4] - 2026-11-09
+### Added
+- **Triển Khai Truy Cập SSL (HTTPS) Chính Thức Cho `https://lichannhien.com` & `https://www.lichannhien.com`**:
+  - Cấp phát chứng chỉ SSL Let's Encrypt hợp lệ cho `lichannhien.com` và `www.lichannhien.com`, tích hợp cơ chế tự động gia hạn (Auto-renewal) và deploy hook tự động reload Apache2.
+  - Cấu hình `<VirtualHost *:443>` trên Apache2 (`SSLEngine on`), kết nối End-to-End SSL (Full Strict) với Cloudflare CDN/DNS, khắc phục hoàn toàn lỗi `HTTP 525 SSL Handshake Failed`.
+  - Thiết lập tự động chuyển hướng `301 Moved Permanently` từ `http://` sang `https://` trên `<VirtualHost *:80>` (hỗ trợ loại trừ ACME challenge và kiểm tra `X-Forwarded-Proto`).
+  - Cập nhật `APP_URL=https://lichannhien.com` cho container `luna_app`.
+
 ## [1.1.3] - 2026-10-04
 ### Changed
 - **Tinh Gọn Module Ủng Hộ (Web App)**:

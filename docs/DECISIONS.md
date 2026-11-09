@@ -266,4 +266,23 @@ Tài liệu này lưu trữ toàn bộ các Quyết định Kiến trúc (Archit
      - `vietQrUrl` tạo mã với `amount=0` cho phép người dùng tự nhập số tiền tùy tâm trên ứng dụng ngân hàng khi quét mã.
 - **Reason**: Giúp giao diện chuyển khoản ủng hộ trở nên tối giản, trực quan, thao tác nhanh gọn và thân thiện tối đa với mọi đối tượng người dùng (đặc biệt là người cao tuổi) theo đúng tôn chỉ của dự án.
 
+---
+
+## D-018: Triển Khai Chứng Chỉ SSL (Let's Encrypt) & Cấu Hình HTTPS Toàn Diện (Full Strict) Cùng Cloudflare
+- **Date**: 2026-11-09
+- **Status**: ACTIVE
+- **Context**: Người dùng đã cấu hình trỏ tên miền `lichannhien.com` (và `www.lichannhien.com`) qua hệ thống DNS / Nameserver của Cloudflare (`kay.ns.cloudflare.com`, `lloyd.ns.cloudflare.com`). Khi truy cập `https://lichannhien.com`, Cloudflare kết nối tới Origin Server (`160.25.145.75:443`) ở chế độ SSL `Full` / `Full (Strict)` nên gặp lỗi `HTTP 525 (SSL Handshake Failed)` do Apache2 trên VPS chưa có `<VirtualHost *:443>` và chứng chỉ SSL cho domain này.
+- **Decision**:
+  1. **Cấp phát Chứng chỉ SSL Chính Thức (Let's Encrypt)**:
+     - Cấu hình ACME HTTP-01 Challenge qua `/var/www/html/.well-known/acme-challenge/` (`ProxyPass /.well-known/acme-challenge/ !`) trên Apache2 để xác thực tên miền xuyên qua Cloudflare Proxy.
+     - Cấp phát chứng chỉ SSL cho cả `lichannhien.com` và `www.lichannhien.com` tại `/etc/letsencrypt/live/lichannhien.com/` kèm hook tự động reload Apache2 khi gia hạn (`/etc/letsencrypt/renewal-hooks/deploy/reload-apache2.sh`).
+  2. **Cấu hình Apache2 Reverse Proxy HTTPS (`*:443`) & Chuyển hướng HTTP → HTTPS (`*:80`)**:
+     - Thiết lập `<VirtualHost *:443>` với `SSLEngine on`, gắn chứng chỉ Let's Encrypt, đặt header `RequestHeader set X-Forwarded-Proto "https"` và chuyển tiếp vào `http://127.0.0.1:8087/` (`luna_app`).
+     - Thiết lập Rewrite Rule thông minh trên `<VirtualHost *:80>`: Tự động Redirect 301 từ `http://` sang `https://` khi `X-Forwarded-Proto != https` và không phải đường dẫn `/.well-known/acme-challenge/`, vừa đảm bảo luôn dùng HTTPS vừa chống vòng lặp redirect trong mọi chế độ SSL của Cloudflare.
+     - Cập nhật các Redirect từ domain cũ (`luna.1988.vn`, `/luna`) trỏ thẳng về `https://lichannhien.com/`.
+  3. **Cập nhật Biến Môi Trường**:
+     - Cập nhật `APP_URL=https://lichannhien.com` trong `.env` và khởi động lại container `luna_app`.
+- **Reason**: Giải quyết triệt để lỗi 525 từ Cloudflare, đảm bảo mã hóa đầu-cuối (End-to-End Encryption - Full Strict SSL) giữa trình duyệt người dùng ↔ Cloudflare Edge ↔ Origin VPS và tự động gia hạn chứng chỉ định kỳ.
+
+
 
